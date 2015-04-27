@@ -1,0 +1,30 @@
+{
+  "name": "livefyre-geo-collection",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/*.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "promise": "^7.0.1"
+  },
+  "devDependencies": {
+    "blue-tape": "^0.1.8"
+  },
+  "testling": {
+    "files": "test/*.js",
+    "browsers": [
+      "ie/6..latest",
+      "chrome/22..latest",
+      "firefox/16..latest",
+      "safari/latest",
+      "opera/11.0..latest",
+      "iphone/6",
+      "ipad/6",
+      "android-browser/latest"
+    ]
+  }
+}
