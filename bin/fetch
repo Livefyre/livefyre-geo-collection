@@ -1,6 +1,15 @@
-var geoUrl = require('../').url;
+#!/usr/bin/env node
 
-console.log('livefyre-geo-collection stdout example');
+var geoUrl = require('../').url;
+var doc = require('fs').readFileSync(__dirname+'/fetch.doc', 'utf8');
+var argv = process.argv.slice(2);
+var opts = argv.length ? require('docopt').docopt(doc, { help: false }) : { '-h': true };
+var shouldHelp = opts['-h'] || opts['--help'];
+
+if (shouldHelp) {
+  console.log(doc);
+  process.exit();
+}
 
 var opts = {
   collection: {

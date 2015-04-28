@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "blue-tape": "^0.1.8",
+    "docopt": "^0.6.2",
     "npm-watch": "0.0.0",
     "zuul": "^2.1.1"
   },

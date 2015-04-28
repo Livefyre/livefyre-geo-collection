@@ -1,0 +1,6 @@
+Usage:
+  fetch.js <network> <siteId> <articleId> <x> <y> <z>
+  fetch.js -h | --help | --version
+
+Example:
+  fetch.js labs.fyre.co 315833 ben-geo-0 3 7 1
