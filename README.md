@@ -20,3 +20,27 @@ var url = require('livefyre-geo-collection').url({
 
 (url === 'https://labs.bootstrap.fyre.co/bs3/v3.1/labs.fyre.co/315833/YmVuLWdlby0w/geojson/3/7/1.json');
 ```
+
+## Goal
+
+v1 will be able to do this
+
+```javascript
+Livefyre.require([
+  'streamhub-wall#3',
+  'livefyre-geo-collection#1'],
+function (Wall, GeoCollection) {
+  new Wall({
+    el: document.getElement('wall'),
+    collection: new GeoCollection({
+      network: 'labs.fyre.co',
+      siteId: 315833,
+      articleId: 'ben-geo-0'
+      geometry: {
+        "type": "Polygon",
+        "coordinates": [ [100.0, 0.0], [101.0, 0.0] ]
+      }
+    })
+  })
+});
+```

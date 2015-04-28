@@ -13,7 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "promise": "^7.0.1"
+    "es6-promise": "^2.1.1",
+    "isomorphic-fetch": "^2.0.2"
   },
   "devDependencies": {
     "blue-tape": "^0.1.8",
