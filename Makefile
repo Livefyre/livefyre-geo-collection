@@ -1,5 +1,6 @@
-.PHONY: test
+.PHONY: test test-node test-browser test-all-browsers watch
 
+# Test files
 TESTS?=test/*.js
 
 # Default Zuul Vars
@@ -9,6 +10,7 @@ DEFAULT_BROWSER_VERSION?=latest
 test:
 	@if [ "x$(BROWSER_NAME)" = "x" ]; then make test-node; else make test-browser; fi
 
+# Run tests just in node for speed. Default of `make test`
 test-node:
 	@npm test
 
@@ -28,5 +30,10 @@ else
 		$(TESTS);
 endif
 
+# Test all the browsers in the sauce labs cloud. requires ~/.zuulrc
 test-all-browsers:
 	./node_modules/zuul/bin/zuul $(TESTS)
+
+# Watch {src,test} and re-run tests when they change
+watch:
+	npm run watch
