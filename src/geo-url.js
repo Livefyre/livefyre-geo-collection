@@ -1,7 +1,7 @@
 'use strict';
 var base64 = require('./base64');
 
-var geoUrlTemplate = '{protocol}//{host}/bs3/v3.1/{network}/{siteId}/{b64urlArticleId}/geojson/{x}/{y}/{z}.json';
+var geoUrlTemplate = '{protocol}//{host}/bs3/v3.1/{network}/{siteId}/{b64urlArticleId}/geojson/{z}/{x}/{y}.json';
 /**
  * Get the URL of geo-indexed content of a Livefyre Collection
  * @param collection {object} - { network, siteId, articleId }

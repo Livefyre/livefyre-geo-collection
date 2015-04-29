@@ -12,7 +12,7 @@ var cases = [{
     y: 7,
     z: 1
   },
-  url: 'https://labs.bootstrap.fyre.co/bs3/v3.1/labs.fyre.co/315833/YmVuLWdlby0w/geojson/3/7/1.json'
+  url: 'https://labs.bootstrap.fyre.co/bs3/v3.1/labs.fyre.co/315833/YmVuLWdlby0w/geojson/1/3/7.json'
 },{
   message: 'with http: protocol',
   opts: {
@@ -26,7 +26,7 @@ var cases = [{
     y: 7,
     z: 1
   },
-  url: 'https://labs.bootstrap.fyre.co/bs3/v3.1/labs.fyre.co/315833/YmVuLWdlby0w/geojson/3/7/1.json'
+  url: 'https://labs.bootstrap.fyre.co/bs3/v3.1/labs.fyre.co/315833/YmVuLWdlby0w/geojson/1/3/7.json'
 },{
   message: 'with livefyre.com network',
   opts: {
@@ -39,7 +39,7 @@ var cases = [{
     y: 6,
     z: 1
   },
-  url: 'https://bootstrap.livefyre.com/bs3/v3.1/livefyre.com/315833/YmVuLWdlby0w/geojson/3/6/1.json'
+  url: 'https://bootstrap.livefyre.com/bs3/v3.1/livefyre.com/315833/YmVuLWdlby0w/geojson/1/3/6.json'
 }]
 
 test('geo-url creates correct urls for prod', function (t) {
