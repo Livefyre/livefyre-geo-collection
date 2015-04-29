@@ -1,1 +1,1 @@
-exports.url = require('./src/geo-url');
+module.exports = require('./src/');

@@ -1,0 +1,38 @@
+Usage:
+  livefyre-geo-collection <collection> <x> <y> <z> url
+  livefyre-geo-collection <collection> <x> <y> <z> fetch
+  livefyre-geo-collection -v | --version
+  livefyre-geo-collection -h | --help
+
+Commands:
+  url    Get the API URL of the GeoJSON
+  fetch  fetch the GeoJSON and return the response to stdout
+
+Arguments:
+  <collection>  URN of Livefyre Collection
+  <x>           x coordinate of map tile
+  <y>           y coordinate of map tile
+  <z>           z coordinate of map tile
+
+Options:
+  -h, --help     show this help message and exit
+  -v, --version  show version and exit
+
+Examples:
+  ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-0:collection \
+    3 7 1 \
+    url
+  https://labs.bootstrap.fyre.co/bs3/v3.1/labs.fyre.co/315833/YmVuLWdlby0w/geojson/3/7/1.json
+
+  ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-0:collection \
+    3 7 1 \
+    fetch    
+  {
+    "paging": {
+      "hasPrev": false,
+      "limit": 50
+    },
+    "type": "FeatureCollection",
+    "features": [],
+    "authors": []
+  }

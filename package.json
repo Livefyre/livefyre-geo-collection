@@ -7,16 +7,21 @@
     "test": "node test/*.js",
     "watch": "npm-watch"
   },
+  "bin": {
+    "livefyre-geo-collection": "./bin/cli.js"
+  },
   "watch": {
     "test": "{src,test}/*.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "promise": "^7.0.1"
+    "es6-promise": "^2.1.1",
+    "isomorphic-fetch": "^2.0.2"
   },
   "devDependencies": {
     "blue-tape": "^0.1.8",
+    "docopt": "^0.6.2",
     "npm-watch": "0.0.0",
     "zuul": "^2.1.1"
   },
