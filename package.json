@@ -7,6 +7,9 @@
     "test": "node test/*.js",
     "watch": "npm-watch"
   },
+  "bin": {
+    "livefyre-geo-collection": "./bin/cli.js"
+  },
   "watch": {
     "test": "{src,test}/*.js"
   },
