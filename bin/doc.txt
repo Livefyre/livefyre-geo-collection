@@ -1,13 +1,15 @@
 Usage:
   livefyre-geo-collection <collection> <z> <x> <y> url
   livefyre-geo-collection <collection> <z> <x> <y> fetch
+  livefyre-geo-collection <collection> <z> <x> <y> archive
   livefyre-geo-collection -v | --version
   livefyre-geo-collection -h | --help
 
 Commands:
-  url    Get the API URL of the GeoJSON
-  fetch  fetch the GeoJSON and return the response to stdout
-
+  url      print the API URL of the GeoJSON
+  fetch    fetch one page of GeoJSON and return the response to stdout
+  archive  fetch all the GeoJSON and stream the response to stdout.
+  
 Arguments:
   <collection>  URN of Livefyre Collection
   <z>           z coordinate of map tile

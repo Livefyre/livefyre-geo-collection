@@ -6,10 +6,17 @@ module.exports = function (opts) {
   var max = 10;
   var paging = null;
   archive._read = function () {
-    if (paging && ! paging.hasPrev) {
-      // we done
-      return archive.push(null);
+    var hasPrev = paging && paging.hasPrev;
+    if (paging) {
+      if (hasPrev) {
+        this.emit('error', new Error('There is previous content but I dont yet know how to get it from the API!'))
+        return archive.push(null);
+      } else {
+        // we done
+        return archive.push(null);        
+      }
     }
+
     fetchGeo(opts)
     .then(function (json) {
       paging = json.paging;

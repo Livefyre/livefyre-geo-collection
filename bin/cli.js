@@ -10,6 +10,7 @@ try {
     exit: false,
     help: false
   })
+  // console.log('opts are', opts);
 } catch (e) {
   opts = { '--help': true }
 }
@@ -46,6 +47,18 @@ if (opts.fetch) {
     console.error(err);
     process.exit(1);
   })
+}
+
+if (opts.archive) {
+  geoCollection.archive(geoCollectionOpts)
+  .on('error', function (err) {
+    console.error(err);
+    process.exit(1);
+  })
+  .pipe(process.stdout)
+  .on('finish', function () {
+    process.exit();
+  });
 }
 
 function collectionFromUrn(urn) {
