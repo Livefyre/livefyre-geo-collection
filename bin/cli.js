@@ -38,11 +38,8 @@ if (opts.url) {
 
 if (opts.fetch) {
   geoCollection.fetch(geoCollectionOpts)
-  .then(function (res) {
-    return res.text();
-  })
   .then(function (json) {
-    console.log(json);
+    console.log(JSON.stringify(json, null, 2));
     process.exit();
   })
   .then(null, function (err) {

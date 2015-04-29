@@ -26,14 +26,7 @@ Examples:
 
   ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-0:collection \
     3 7 1 \
-    fetch
-  {"paging": {"hasPrev": false, "limit": 50}, "type": "FeatureCollection", "features": [], "authors": []}
-
-  # requires `jq`
-  ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-0:collection \
-    3 7 1 \
-    fetch \
-    | jq .
+    fetch    
   {
     "paging": {
       "hasPrev": false,
