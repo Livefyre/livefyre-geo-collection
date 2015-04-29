@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node test/*.js"
+    "test": "node test/*.js",
+    "watch": "npm-watch"
+  },
+  "watch": {
+    "test": "{src,test}/*.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +17,7 @@
   },
   "devDependencies": {
     "blue-tape": "^0.1.8",
+    "npm-watch": "0.0.0",
     "zuul": "^2.1.1"
   },
   "testling": {
