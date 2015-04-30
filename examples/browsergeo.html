@@ -152,8 +152,9 @@ deferGeo.done(function() {
     toggleLoader();
   });
 
-
 buildTile = function (r, geoCoords) {
+
+  /* Needs to pass data to geo-extent to get correct coordinates */
   var tile = {
     "type": "Circle",
     "coordinates": [ geoCoords.x, geoCoords.y ],
