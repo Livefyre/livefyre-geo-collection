@@ -1,5 +1,7 @@
 <!doctype html>
+<html>
 <head>
+<link rel="stylesheet" type="text/css" href="http://s.codepen.io/assets/reset/normalize.css" />
   <style>
     ul {
     list-style-type: none;
@@ -25,9 +27,8 @@
   }
   </style>
 </head>
-
+<body>
 <h1>livefyre-geo-collection/examples/browsergeo.html</h1>
-<main id="app">
   <div id="geo">
     <button id="js-your-pos">Find Your Location</button>
     <div id="loader"></div>
@@ -37,6 +38,7 @@
       <ul>
         <li id="js-your-lat">X: <span></span></li>
         <li id="js-your-lon">Y: <span></span></li>
+        <li id="js-your-zoom">Z: <span></span></li>
       </ul>
     </div>
 
@@ -61,14 +63,16 @@
         <h2>Your Map Tile Coordinates</h2>
       <ul>
         <li id="shape-type" class="polygon-shape">Shape: <span></span></li>
-        <li id="shape-coordinates" class="polygon-shape">Coodinates: <span></span></li>
+        <li id="shape-coordinates" class="polygon-shape">Coodinates: [<span></span>]</li>
         <li id="shape-radius" class="polygon-shape">Radius: <span></span></li>
       </ul>
     </div>
 
   </div>
+<main id="app">
 </main>
-
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
 <script src="https://cdn.livefyre.com/Livefyre.js"></script>
 
 <script>
@@ -96,20 +100,27 @@ rejectPromise = function () {
 geoUpdateUI = function (data) {
   $('#js-your-lat > span').text(data.x);
   $('#js-your-lon > span').text(data.y);
+  $('#js-your-zoom > span').text(data.z);
   $('#js-location-wrapper').show();
 };
 
 geoDataUI = function (data) {
   $('#shape-type span').text(data.type);
   $('#shape-coordinates span').text(data.coordinates);
-  $('#shape-radius  span').text(data.radius);
+  $('#shape-radius  span').text(data.radius + ' ' + data.properties.radius_units);
   $('#js-polygon-wrapper').show();
 
 }
-geoSuccess = function (x, y, geoCoords) {
+
+geoSuccess = function (x, y, z, geoCoords) {
+
+  if (!z) {
+    var z = 1;
+  }
+
   geoCoords.x = x;
   geoCoords.y = y;
-  geoCoords.z = 1;
+  geoCoords.z = z;
   geoUpdateUI(geoCoords);
   resolvePromise();
 }
@@ -123,7 +134,7 @@ geoError = function () {
   toggleLoader();
   navigator.geolocation.getCurrentPosition(
     function (pos) {
-      geoSuccess(pos.coords.latitude, pos.coords.longitude, geoCoords);
+      geoSuccess(pos.coords.latitude, pos.coords.longitude, null, geoCoords);
     }, function () {
       geoError();
     }, {
@@ -154,7 +165,8 @@ deferGeo.done(function() {
 
 buildTile = function (r, geoCoords) {
 
-  /* Needs to pass data to geo-extent to get correct coordinates */
+  /* Needs to pass data to geo-extent to get correct coordinates for tile*/
+
   var tile = {
     "type": "Circle",
     "coordinates": [ geoCoords.x, geoCoords.y ],
@@ -189,7 +201,8 @@ $('#radius-form').submit(function (e) {
 }
 */
 
-/* reference media wall call
+/* GOAL
+  reference media wall call
     Livefyre.require([
       'streamhub-wall#3',
       'streamhub-sdk#2.13.8'
@@ -205,6 +218,7 @@ $('#radius-form').submit(function (e) {
       });
     });
 */
+
 /* TODO
 
 create ploygon centererd on user's point with x and y distance from select menu as multiplier and deliver X: [x-coord, y-coord], Y: [x-coord, y-coord], Z: [x-coord, y-coord] points to create proper geoJSON Polygonas call for:
@@ -228,9 +242,8 @@ function (Wall, GeoCollection) {
 });
 */
 </script>
+
 <script>
-
-
 
 Livefyre.require([
   '../dist/livefyre-geo-collection.js'],
@@ -261,3 +274,5 @@ function (GeoCollection) {
   }
 })
 </script>
+</body>
+</html>
