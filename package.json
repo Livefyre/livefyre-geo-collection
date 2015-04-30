@@ -21,8 +21,10 @@
   },
   "devDependencies": {
     "blue-tape": "^0.1.8",
+    "browserify": "^10.0.0",
     "docopt": "^0.6.2",
     "npm-watch": "0.0.0",
+    "uglify-js": "^2.4.20",
     "zuul": "^2.1.1"
   },
   "testling": {

@@ -9,7 +9,7 @@ module.exports = function (opts) {
     var hasPrev = paging && paging.hasPrev;
     if (paging) {
       if (hasPrev) {
-        this.emit('error', new Error('There is previous content but I dont yet know how to get it from the API!'))
+        console.error(new Error('There is previous content but I dont yet know how to get it from the API! Ending for now #TODO'))
         return archive.push(null);
       } else {
         // we done
