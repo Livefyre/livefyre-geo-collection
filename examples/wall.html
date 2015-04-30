@@ -1,0 +1,16 @@
+<!doctype html>
+
+<main id="app"></main>
+
+<script src="https://cdn.livefyre.com/Livefyre.js"></script>
+<script>
+Livefyre.require([
+  'streamhub-wall#3',
+  '../dist/livefyre-geo-collection.js'],
+function (Wall, GeoCollection) {
+  console.log('GeoCollection is', GeoCollection);
+  var app = new Wall({
+    el: document.getElementById('app')
+  })
+})
+</script>
