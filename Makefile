@@ -11,8 +11,19 @@ BROWSERIFY?=./node_modules/.bin/browserify
 
 SRC_FILES?=$(wildcard src/**.js)
 
-test:
+default: build
+
+build: node_modules
+
+node_modules: package.json
+	npm install
+
+test: build
 	@if [ "x$(BROWSER_NAME)" = "x" ]; then make test-node; else make test-browser; fi
+
+# Run a dev server to check out the browser examples/
+server: build dist
+	./node_modules/.bin/http-server
 
 # Run tests just in node for speed. Default of `make test`
 test-node:
@@ -43,7 +54,7 @@ watch:
 	npm run watch
 
 # browserify and build into dist
-dist:
+dist: build
 	mkdir -p dist
 	make dist/livefyre-geo-collection.js
 	make dist/livefyre-geo-collection.min.js
@@ -64,3 +75,6 @@ dist/livefyre-geo-collection.min.js: dist/livefyre-geo-collection.js
 
 clean:
 	rm -rf dist
+
+clean-deps:
+	rm -rf node_modules
