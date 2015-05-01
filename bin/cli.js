@@ -52,7 +52,7 @@ if (opts.fetch) {
 }
 
 if (opts.archive) {
-  geoCollection.archive(geoCollectionOpts)
+  geoCollection.createTileArchive(geoCollectionOpts)
   .on('error', function (err) {
     console.error(err);
     process.exit(1);

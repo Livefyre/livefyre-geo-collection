@@ -1,7 +1,7 @@
 var Readable = require('stream').Readable;
 var fetchGeo = require('./fetch');
 
-module.exports = function (opts) {
+module.exports = function createTileArchive(opts) {
   var archive = new Readable({ objectMode: true });
   var max = 10;
   var paging = null;
