@@ -1,4 +1,5 @@
-'use strict'
+'use strict';
+
 exports.circle = function (type, center, radius, units) {
   console.log('making a circle', arguments);
 
@@ -14,16 +15,15 @@ exports.circle = function (type, center, radius, units) {
   return geometryCircle;
 };
 
-// exports.polygon = function (type, coordinates, props) {
-//   console.log('making a polygon', arguments)
-//   var geometry = {
-//     "type": type,
-//     "coordinates": coordinates
-//     },
-//     "properties": {
-//       "prop0": props[0],
-//       "prop1": props[1]
-//     };
+exports.polygon = function (type, coordinates, props) {
+  console.log('making a polygon', arguments);
 
-//   return geometry;
-// }
+  var geometryPolygon = {
+    type: type,
+    coordinates: coordinates,
+    properties: props
+  };
+
+  return geometryPolygon;
+
+};
