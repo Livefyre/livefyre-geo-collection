@@ -28,9 +28,11 @@ if (opts['--help']) {
 
 var geoCollectionOpts = {
   collection: collectionFromUrn(opts['<collection>']),
-  x: opts['<x>'],
-  y: opts['<y>'],
-  z: opts['<z>'],
+  tile: {
+    x: opts['<x>'],
+    y: opts['<y>'],
+    z: opts['<z>']
+  }
 }
 
 if (opts.url) {
