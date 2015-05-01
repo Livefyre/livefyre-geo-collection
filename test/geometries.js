@@ -23,20 +23,20 @@ test('can create a circle GeoJSOn from geometries.circle', function (t) {
 test('can create a polygon GeoJSOn from geometries.polygon', function (t) {
   var type = 'Polygon';
   var coordinates = [ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ];
-  var props = {
+  var properties = {
     "prop0": "value0",
     "prop1": {
       "this": "that"
     }
   };
 
-  var geometry = geometries.polygon(type, coordinates, props);
+  var geometry = geometries.polygon(type, coordinates, properties);
   //t.equal(geometry.type, 'Polygon');
 
   t.deepEqual(geometry, {
     type: type,
     coordinates: coordinates,
-    properties: props
+    properties: properties
   });
   t.end();
 });

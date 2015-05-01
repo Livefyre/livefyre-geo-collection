@@ -15,13 +15,13 @@ exports.circle = function (type, center, radius, units) {
   return geometryCircle;
 };
 
-exports.polygon = function (type, coordinates, props) {
+exports.polygon = function (type, coordinates, properties) {
   console.log('making a polygon', arguments);
 
   var geometryPolygon = {
     type: type,
     coordinates: coordinates,
-    properties: props
+    properties: properties
   };
 
   return geometryPolygon;
