@@ -82,7 +82,7 @@ Examples:
 
   ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-0:collection \
     3 7 1 \
-    fetch    
+    fetch
   {
     "paging": {
       "hasPrev": false,
@@ -119,6 +119,23 @@ function (Wall, GeoCollection) {
         "type": "Polygon",
         "coordinates": [ [100.0, 0.0], [101.0, 0.0] ]
       }
+    })
+  })
+});
+```
+
+```javascript
+Livefyre.require([
+  'streamhub-wall#3',
+  'livefyre-geo-collection#1'],
+function (Wall, GeoCollection) {
+  new Wall({
+    el: document.getElement('wall'),
+    collection: GeoCollection({
+      network: 'labs.fyre.co',
+      siteId: 315833,
+      articleId: 'ben-geo-0'
+      geometry: GeoCollection.geometries.circle([1,1, 0,0], 'radi')
     })
   })
 });
