@@ -17,6 +17,7 @@ build: node_modules
 
 node_modules: package.json
 	npm install
+	touch $@
 
 test: build
 	@if [ "x$(BROWSER_NAME)" = "x" ]; then make test-node; else make test-browser; fi
