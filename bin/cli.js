@@ -26,13 +26,29 @@ if (opts['--help']) {
   process.exit(1);
 }
 
+// tile opt should be like "z,x,y"
+var tile = opts['<tile>'].split(',')
+  .map(function (coord) { return parseFloat(coord, 10); })
+  .reduce(function (tile, coord, i) {
+    var dimension;
+    switch(i) {
+      case 0:
+        dimension = 'z';
+        break;
+      case 1:
+        dimension = 'x';
+        break;
+      case 2:
+        dimension = 'y';
+        break;
+    }
+    tile[dimension] = coord;
+    return tile;
+  }, {});
+
 var geoCollectionOpts = {
   collection: collectionFromUrn(opts['<collection>']),
-  tile: {
-    x: opts['<x>'],
-    y: opts['<y>'],
-    z: opts['<z>']
-  }
+  tile: tile
 }
 
 if (opts.url) {

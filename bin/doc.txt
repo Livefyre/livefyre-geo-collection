@@ -1,7 +1,7 @@
 Usage:
-  livefyre-geo-collection <collection> <z> <x> <y> url
-  livefyre-geo-collection <collection> <z> <x> <y> fetch
-  livefyre-geo-collection <collection> <z> <x> <y> archive
+  livefyre-geo-collection <collection> (-t <tile>) url
+  livefyre-geo-collection <collection> (-t <tile>) fetch
+  livefyre-geo-collection <collection> (-t <tile>) archive
   livefyre-geo-collection -v | --version
   livefyre-geo-collection -h | --help
 
@@ -12,22 +12,20 @@ Commands:
   
 Arguments:
   <collection>  URN of Livefyre Collection
-  <z>           z coordinate of map tile
-  <x>           x coordinate of map tile
-  <y>           y coordinate of map tile
 
 Options:
+  -t, --tile     specify the GIS tile to access like z,x,y
   -h, --help     show this help message and exit
   -v, --version  show version and exit
 
 Examples:
   ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-1:collection \
-    3 3 1 \
+    -t 3,3,1 \
     url
   https://labs.bootstrap.fyre.co/bs3/v3.1/labs.fyre.co/315833/YmVuLWdlby0w/geojson/3/7/1.json
 
   ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-1:collection \
-    3 3 1 \
+    -t 3,3,1 \
     fetch    
   {
     "paging": {
