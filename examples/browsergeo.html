@@ -1,0 +1,278 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="http://s.codepen.io/assets/reset/normalize.css" />
+  <style>
+    ul {
+    list-style-type: none;
+    font-size: 18px;
+  }
+
+  #loader {
+    background: url('http://client-solutions.livefyre.com/cid/maps/ajax-loader.gif') center center no-repeat transparent;
+    width: 16px;
+    height: 16px;
+    display: block;
+    visibility: hidden;
+  }
+
+  .visible {
+    visibility: visible !important;
+  }
+
+  #js-distance-wrapper,
+  #js-polygon-wrapper,
+  #js-location-wrapper{
+    display: none;
+  }
+  </style>
+</head>
+<body>
+<h1>livefyre-geo-collection/examples/browsergeo.html</h1>
+  <div id="geo">
+    <button id="js-your-pos">Find Your Location</button>
+    <div id="loader"></div>
+
+    <div id="js-location-wrapper">
+      <h2>Your Geo Point Coordinates</h2>
+      <ul>
+        <li id="js-your-lat">X: <span></span></li>
+        <li id="js-your-lon">Y: <span></span></li>
+        <li id="js-your-zoom">Z: <span></span></li>
+      </ul>
+    </div>
+
+    <div id="js-distance-wrapper">
+      <h2>Enter Disctance From You</h2>
+      <form class="form-inline" role="form" id="radius-form">
+        <div class="form-group">
+          <label for="disctance">Radius: </label>
+          <select id="radius">
+            <option value=".25">.25 Mile</option>
+            <option value="5">5 Miles</option>
+            <option value="50">50 Miles</option>
+          </select>
+          <button type="submit" class="btn" id="submit-radius">
+          Create Tile
+          </button>
+        </div>
+      </form>
+   </div>
+
+    <div id="js-polygon-wrapper">
+        <h2>Your Map Tile Coordinates</h2>
+      <ul>
+        <li id="shape-type" class="polygon-shape">Shape: <span></span></li>
+        <li id="shape-coordinates" class="polygon-shape">Coodinates: [<span></span>]</li>
+        <li id="shape-radius" class="polygon-shape">Radius: <span></span></li>
+      </ul>
+    </div>
+
+  </div>
+<main id="app">
+</main>
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
+<script src="https://cdn.livefyre.com/Livefyre.js"></script>
+
+<script>
+// Polly Fill if browser doesn't support geo
+Modernizr.load({
+  test: Modernizr.geolocation,
+  yep : '',
+  nope: 'http://client-solutions.livefyre.com/cid/maps/geo-polyfill.js'
+});
+
+var deferGeo, geoSuccess, geoError, geoUpdateUI, resolvePromise, rejectPromise, showDistanceForm, toggleLoader, buildTile, geoCoords, geoDataUI;
+
+geoCoords = {};
+
+deferGeo = new $.Deferred;
+
+resolvePromise = function () {
+  deferGeo.resolve();
+};
+
+rejectPromise = function () {
+  deferGeo.reject();
+};
+
+geoUpdateUI = function (data) {
+  $('#js-your-lat > span').text(data.x);
+  $('#js-your-lon > span').text(data.y);
+  $('#js-your-zoom > span').text(data.z);
+  $('#js-location-wrapper').show();
+};
+
+geoDataUI = function (data) {
+  $('#shape-type span').text(data.type);
+  $('#shape-coordinates span').text(data.coordinates);
+  $('#shape-radius  span').text(data.radius + ' ' + data.properties.radius_units);
+  $('#js-polygon-wrapper').show();
+
+}
+
+geoSuccess = function (x, y, z, geoCoords) {
+
+  if (!z) {
+    var z = 1;
+  }
+
+  geoCoords.x = x;
+  geoCoords.y = y;
+  geoCoords.z = z;
+  geoUpdateUI(geoCoords);
+  resolvePromise();
+}
+
+geoError = function () {
+  rejectPromise();
+}
+
+ // Bind the Event
+ $('body').on('click', '#js-your-pos', function (e) {
+  toggleLoader();
+  navigator.geolocation.getCurrentPosition(
+    function (pos) {
+      geoSuccess(pos.coords.latitude, pos.coords.longitude, null, geoCoords);
+    }, function () {
+      geoError();
+    }, {
+      maximumAge: 60000,
+      timeout: 5000,
+      enableHighAccuracy: true
+    }
+  );
+   return deferGeo.promise();
+ });
+
+showDistanceForm = function () {
+  $('#js-distance-wrapper').show();
+}
+
+toggleLoader = function () {
+  $('#loader').toggleClass('visible');
+}
+
+deferGeo.done(function() {
+  showDistanceForm();
+  })
+  .fail(function() {
+  })
+  .always(function () {
+    toggleLoader();
+  });
+
+buildTile = function (r, geoCoords) {
+
+  /* Needs to pass data to geo-extent to get correct coordinates for tile*/
+
+  var tile = {
+    "type": "Circle",
+    "coordinates": [ geoCoords.x, geoCoords.y ],
+     "radius": r,
+     "properties": {
+        "radius_units": "mi"
+      }
+  };
+
+  geoDataUI(tile);
+  console.dir(tile);
+};
+
+$('#radius-form').submit(function (e) {
+  e.preventDefault();
+  var radius = parseFloat($('#radius').val(), 10);
+  buildTile(radius, geoCoords);
+});
+
+
+/* object we want when with geoData
+
+ Circle
+ ------------------
+
+ { "type": "Circle",
+   "coordinates": [ 100.0, 0.0 ],
+   "radius": 0.5,
+   "properties": {
+          "radius_units": "km"
+   }
+}
+*/
+
+/* GOAL
+  reference media wall call
+    Livefyre.require([
+      'streamhub-wall#3',
+      'streamhub-sdk#2.13.8'
+    ], function (LiveMediaWall, SDK){
+
+      var wall = new LiveMediaWall({
+        el: document.getElementById('wall'),
+        collection: new (SDK.Collection)({
+            network:'labs.fyre.co',
+            siteId: 315833,
+            articleId: 'ben-geo-0'
+        })
+      });
+    });
+*/
+
+/* TODO
+
+create ploygon centererd on user's point with x and y distance from select menu as multiplier and deliver X: [x-coord, y-coord], Y: [x-coord, y-coord], Z: [x-coord, y-coord] points to create proper geoJSON Polygonas call for:
+
+Livefyre.require([
+  'streamhub-wall#3',
+  'livefyre-geo-collection#1'],
+function (Wall, GeoCollection) {
+  new Wall({
+    el: document.getElement('wall'),
+    collection: GeoCollection({
+      network: 'labs.fyre.co',
+      siteId: 315833,
+      articleId: 'ben-geo-0'
+      geometry: {
+        "type": "Polygon",
+        "coordinates": [ [100.0, 0.0], [101.0, 0.0] ]
+      }
+    })
+  })
+});
+*/
+</script>
+
+<script>
+
+Livefyre.require([
+  '../dist/livefyre-geo-collection.js'],
+function (GeoCollection) {
+  var appEl = document.getElementById('app');
+  var archive = GeoCollection.archive({
+    collection: {
+      network: 'labs.fyre.co',
+      siteId: 315833,
+      articleId: 'ben-geo-1'
+    },
+    x: 3,
+    y: 1,
+    z: 3
+  });
+
+  archive.on('data', function (d) {
+    var dataEl = renderArchiveData(d)
+    appEl.insertBefore(dataEl, appEl.firstChild);
+  });
+
+  function renderArchiveData(data) {
+    var el = document.createElement('pre');
+    var formatted = JSON.stringify(JSON.parse(data), null, 2);
+    var text = document.createTextNode(formatted);
+    el.appendChild(text);
+    return el;
+  }
+})
+</script>
+</body>
+</html>
