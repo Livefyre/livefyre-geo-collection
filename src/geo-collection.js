@@ -1,4 +1,5 @@
 var createTileArchive = require('./tile-archive');
+var geometryToTile = require('./geometry-to-tile');
 
 /**
  * Represents the subset of items in a Livefyre Collection that are
@@ -8,15 +9,28 @@ var createTileArchive = require('./tile-archive');
  */
 module.exports = function GeoCollection(collection, geometry) {
   this.createArchive = function () {
-    // todo: convert geometry to proper tile
-    var tile = {
-      x: 3,
-      y: 7,
-      z: 1
-    };
-    return createTileArchive({
+    var tile = geometryToTile(geometry);
+    var tileArchive = createTileArchive({
       collection: collection,
       tile: tile
     });
+    // stream of things in the right tile, but filtered to exclude
+    // anything that wasn't in the geometry
+    return tileArchive.pipe(geometryContentFilter(geometry));
   };
 };
+
+function geometryContentFilter(geometry) {
+  return require('through2-filter')(function (content) {
+    var coord = coordOfContent(content);
+    return geometryContainsCoordinate(geometry, coord);
+  });
+}
+
+function coordOfContent() {
+
+}
+
+function geometryContainsCoordinate(geometry, coord) {
+  return true;
+}
