@@ -220,6 +220,7 @@ $('#radius-form').submit(function (e) {
 */
 
 /* TODO
+https://github.com/mbostock/d3/blob/3abb00113662463e5c19eb87cd33f6d0ddc23bc0/src/geo/circle.js
 
 create ploygon centererd on user's point with x and y distance from select menu as multiplier and deliver X: [x-coord, y-coord], Y: [x-coord, y-coord], Z: [x-coord, y-coord] points to create proper geoJSON Polygonas call for:
 
@@ -233,10 +234,7 @@ function (Wall, GeoCollection) {
       network: 'labs.fyre.co',
       siteId: 315833,
       articleId: 'ben-geo-0'
-      geometry: {
-        "type": "Polygon",
-        "coordinates": [ [100.0, 0.0], [101.0, 0.0] ]
-      }
+      geometry: d3.geo.circle(center, radius, precision)
     })
   })
 });
