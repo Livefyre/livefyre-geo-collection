@@ -26,25 +26,7 @@ if (opts['--help']) {
   process.exit(1);
 }
 
-// tile opt should be like "z,x,y"
-var tile = opts['<tile>'].split(',')
-  .map(function (coord) { return parseFloat(coord, 10); })
-  .reduce(function (tile, coord, i) {
-    var dimension;
-    switch(i) {
-      case 0:
-        dimension = 'z';
-        break;
-      case 1:
-        dimension = 'x';
-        break;
-      case 2:
-        dimension = 'y';
-        break;
-    }
-    tile[dimension] = coord;
-    return tile;
-  }, {});
+var tile = tileFromOpts(opts);
 
 var geoCollectionOpts = {
   collection: collectionFromUrn(opts['<collection>']),
@@ -97,4 +79,41 @@ function collectionFromUrn(urn) {
   return collection;
 }
 
+function tileFromOpts() {
+  if (opts['<tile>']) {
+    return parseTile(opts['<tile>']);
+  }
+  if (opts['<feature>']) {
+    return require('../src/geometry-to-tile')(parseFeature(opts['<feature>']));
+  }
+  throw new Error("Couldn't determine tile from opts")
+}
 
+
+function parseFeature(featureStr) {
+  var feature = JSON.parse(featureStr);
+  return feature;
+}
+
+function parseTile(tileStr) {
+    // tile opt should be like "z,x,y"
+  var tile = tileStr.split(',')
+    .map(function (coord) { return parseFloat(coord, 10); })
+    .reduce(function (tile, coord, i) {
+      var dimension;
+      switch(i) {
+        case 0:
+          dimension = 'z';
+          break;
+        case 1:
+          dimension = 'x';
+          break;
+        case 2:
+          dimension = 'y';
+          break;
+      }
+      tile[dimension] = coord;
+      return tile;
+    }, {});
+  return tile;
+}

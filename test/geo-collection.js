@@ -2,14 +2,8 @@ var test = require('blue-tape');
 // var geoCollectionMixin = require('../').mixin;
 var GeoCollection = require('../').GeoCollection;
 
-var mockGeometry = {
-  "type": "Circle",
-  "coordinates": [ 1, 2 ],
-   "radius": 3,
-   "properties": {
-      "radius_units": "mi"
-    }
-};
+var mockGeometry = fixture('polygon.json');
+
 var fakeCollection = {
   network: 'labs.fyre.co',
   siteId: 315833,
@@ -37,3 +31,8 @@ test('can create a GeoCollection', function (t) {
 
   t.end();
 })
+
+function fixture(path) {
+  var json = require('fs').readFileSync(__dirname+'/fixtures/polygon.json', 'utf8');
+  return JSON.parse(json);
+}

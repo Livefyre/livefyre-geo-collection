@@ -1,7 +1,7 @@
 Usage:
-  livefyre-geo-collection <collection> (-t <tile>) url
-  livefyre-geo-collection <collection> (-t <tile>) fetch
-  livefyre-geo-collection <collection> (-t <tile>) archive
+  livefyre-geo-collection <collection> (-t <tile> | -f <feature>) url
+  livefyre-geo-collection <collection> (-t <tile> | -f <feature>) fetch
+  livefyre-geo-collection <collection> (-t <tile> | -f <feature>) archive
   livefyre-geo-collection -v | --version
   livefyre-geo-collection -h | --help
 
@@ -15,6 +15,7 @@ Arguments:
 
 Options:
   -t, --tile     specify the GIS tile to access like z,x,y
+  -f, --feature  determine the tile from a GeoJSON feature (JSON string)
   -h, --help     show this help message and exit
   -v, --version  show version and exit
 
@@ -36,3 +37,6 @@ Examples:
     "features": [],
     "authors": []
   }
+
+  # Example of sourcing a GeoJSON feature from a file
+  ⚡ node ./bin/cli.js urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-1:collection -f "$(cat test/fixtures/ks.json)" url

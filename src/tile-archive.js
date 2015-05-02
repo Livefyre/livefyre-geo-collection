@@ -9,7 +9,7 @@ module.exports = function createTileArchive(opts) {
     var hasPrev = paging && paging.hasPrev;
     if (paging) {
       if (hasPrev) {
-        console.error(new Error('There is previous content but I dont yet know how to get it from the API! Ending for now #TODO'))
+        // console.error(new Error('There is previous content but I dont yet know how to get it from the API! Ending for now #TODO'))
         return archive.push(null);
       } else {
         // we done

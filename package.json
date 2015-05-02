@@ -18,7 +18,9 @@
   "dependencies": {
     "es6-promise": "^2.1.1",
     "isomorphic-fetch": "^2.0.2",
-    "through2-filter": "^1.4.1"
+    "through2-filter": "^1.4.1",
+    "turf-extent": "^1.0.4",
+    "xyz-affair": "^0.9.1"
   },
   "devDependencies": {
     "blue-tape": "^0.1.8",
