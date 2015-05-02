@@ -1,7 +1,7 @@
 Usage:
-  livefyre-geo-collection <collection> (-t <tile> | -f <feature>) url
-  livefyre-geo-collection <collection> (-t <tile> | -f <feature>) fetch
-  livefyre-geo-collection <collection> (-t <tile> | -f <feature>) archive
+  livefyre-geo-collection <collection> (-t <tile> | -g <geometry>) url
+  livefyre-geo-collection <collection> (-t <tile> | -g <geometry>) fetch
+  livefyre-geo-collection <collection> (-t <tile> | -g <geometry>) archive
   livefyre-geo-collection -v | --version
   livefyre-geo-collection -h | --help
 
@@ -14,10 +14,10 @@ Arguments:
   <collection>  URN of Livefyre Collection
 
 Options:
-  -t, --tile     specify the GIS tile to access like z,x,y
-  -f, --feature  determine the tile from a GeoJSON feature (JSON string)
-  -h, --help     show this help message and exit
-  -v, --version  show version and exit
+  -t, --tile      specify the GIS tile to access like z,x,y
+  -g, --geometry  determine the tile from a GeoJSON geometry (JSON string)
+  -h, --help      show this help message and exit
+  -v, --version   show version and exit
 
 Examples:
   ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-1:collection \
@@ -39,4 +39,4 @@ Examples:
   }
 
   # Example of sourcing a GeoJSON feature from a file
-  ⚡ node ./bin/cli.js urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-1:collection -f "$(cat test/fixtures/ks.json)" url
+  ⚡ node ./bin/cli.js urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-1:collection -g "$(cat test/fixtures/ks.json)" url

@@ -83,16 +83,16 @@ function tileFromOpts() {
   if (opts['<tile>']) {
     return parseTile(opts['<tile>']);
   }
-  if (opts['<feature>']) {
-    return require('../src/geometry-to-tile')(parseFeature(opts['<feature>']));
+  if (opts['<geometry>']) {
+    return require('../src/geometry-to-tile')(parseGeometry(opts['<geometry>']));
   }
   throw new Error("Couldn't determine tile from opts")
 }
 
 
-function parseFeature(featureStr) {
-  var feature = JSON.parse(featureStr);
-  return feature;
+function parseGeometry(geometryStr) {
+  var geometry = JSON.parse(geometryStr);
+  return geometry;
 }
 
 function parseTile(tileStr) {
