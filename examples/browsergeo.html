@@ -53,7 +53,7 @@
             <option value="50">50 Miles</option>
           </select>
           <button type="submit" class="btn" id="submit-radius">
-          Create Tile
+          Create Circle
           </button>
         </div>
       </form>
@@ -74,6 +74,7 @@
 <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
 <script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
 <script src="https://cdn.livefyre.com/Livefyre.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
 
 <script>
 // Polly Fill if browser doesn't support geo
@@ -82,6 +83,7 @@ Modernizr.load({
   yep : '',
   nope: 'http://client-solutions.livefyre.com/cid/maps/geo-polyfill.js'
 });
+
 
 var deferGeo, geoSuccess, geoError, geoUpdateUI, resolvePromise, rejectPromise, showDistanceForm, toggleLoader, buildTile, geoCoords, geoDataUI;
 
