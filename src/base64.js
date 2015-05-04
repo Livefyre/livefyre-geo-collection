@@ -24,7 +24,6 @@ base64.urlDecode = function(encoded) {
 base64.pad = function (unpadded) {
   var interval = 4;
   var mod = unpadded.length % interval;
-  console.log('mod',mod)
   if ( ! mod) {
     // no need to pad
     return unpadded;
