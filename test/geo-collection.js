@@ -2,7 +2,7 @@ var test = require('blue-tape');
 // var geoCollectionMixin = require('../').mixin;
 var GeoCollection = require('../').GeoCollection;
 
-var mockGeometry = fixture('polygon.json');
+var mockGeometry = fixture('ks.geojson');
 
 var fakeCollection = {
   network: 'labs.fyre.co',
@@ -33,6 +33,6 @@ test('can create a GeoCollection', function (t) {
 })
 
 function fixture(path) {
-  var json = require('fs').readFileSync(__dirname+'/fixtures/polygon.json', 'utf8');
+  var json = require('fs').readFileSync(__dirname+'/fixtures/'+path, 'utf8');
   return JSON.parse(json);
 }
