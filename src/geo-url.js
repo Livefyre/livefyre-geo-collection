@@ -18,7 +18,7 @@ module.exports = function (opts) {
     protocol: opts.protocol || 'https:',
     network: collection.network,
     siteId: collection.siteId,
-    b64urlArticleId: base64.urlEncode(collection.articleId),
+    b64urlArticleId: base64.pad(base64.urlEncode(collection.articleId)),
     x: tile.x,
     y: tile.y,
     z: tile.z

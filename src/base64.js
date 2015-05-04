@@ -20,3 +20,17 @@ base64.urlDecode = function(encoded) {
     encoded += '=';
   return base64.decode(encoded);
 };
+
+base64.pad = function (unpadded) {
+  var interval = 4;
+  var mod = unpadded.length % interval;
+  console.log('mod',mod)
+  if ( ! mod) {
+    // no need to pad
+    return unpadded;
+  }
+  // need to pad to be multiple of 4. 5 because .join will create
+  // (length - 1) '=' chars
+  var padding = (new Array(1 + interval - mod)).join('=');
+  return unpadded + padding;
+}
