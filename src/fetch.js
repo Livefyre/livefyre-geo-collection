@@ -11,6 +11,16 @@ var requestGeo = require('./request');
  */
 module.exports = function () {
   return requestGeo.apply(null, arguments).then(function (res) {
-    return res.json();
+    if (res.ok) {
+      return res.json();
+    }
+    throw createHttpResponseNotOkError(res);
   });
+}
+
+function createHttpResponseNotOkError(response, msg) {
+  var msg = msg || "HTTP Response is not 200 OK";
+  var err = new Error(msg);
+  err.response = response;
+  return err;
 }
