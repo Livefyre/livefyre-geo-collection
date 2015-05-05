@@ -1,5 +1,6 @@
 'use strict';
 var base64 = require('./base64');
+var querystring = require('querystring');
 
 var geoUrlTemplate = '{protocol}//{host}/bs3/v3.1/{network}/{siteId}/{b64urlArticleId}/geojson/{z}/{x}/{y}.json';
 /**
@@ -23,6 +24,9 @@ module.exports = function (opts) {
     y: tile.y,
     z: tile.z
   });
+  if (opts.until) {
+    url = [url, querystring.stringify({ until: opts.until })].join('?')
+  }
   return url;
 }
 

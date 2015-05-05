@@ -61,6 +61,22 @@ var cases = [{
     }
   },
   url: 'https://labs-t402.bootstrap.fyre.co/bs3/v3.1/labs-t402.fyre.co/303827/dWF0LWJlbi1nZW8tMA==/geojson/1/0/0.json'
+},{
+  message: 'with opts.until for paging',
+  opts: {
+    collection: {
+      network: 'labs-t402.fyre.co',
+      siteId: 303827,
+      articleId: 'uat-ben-geo-0'
+    },
+    tile: {
+      x: 0,
+      y: 0,
+      z: 1
+    },
+    until: 12512512.1111
+  },
+  url: 'https://labs-t402.bootstrap.fyre.co/bs3/v3.1/labs-t402.fyre.co/303827/dWF0LWJlbi1nZW8tMA==/geojson/1/0/0.json?until=12512512.1111'
 }]
 
 test('geo-url creates correct urls for prod', function (t) {
