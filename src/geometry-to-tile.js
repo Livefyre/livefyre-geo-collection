@@ -4,45 +4,34 @@
  */
 module.exports = function geometryToTile(geometry) {
   var extent = require('turf-extent')(geometry);
-  var tiles = tilesCovering(extent, smallestZoomForExtent(extent));
-  // #TODO
-  if (tiles.length !== 1) {
-    throw new Error("Can't find a tile that covers that geometry");
-  }
-  var tile = tiles[0];
+  var tilebelt = require('tilebelt');
+  var tile = tileCoveringExtent(extent);
   return tile;
 }
 
-// Given an extent, return the highest zoom level in tiles that circumscribes
-// the extent
-// #TODO optimize to not be a naive brute force
-function smallestZoomForExtent(extent) {
-  var lastZoom;
-  var zoom = 1;
-  var numTiles = tilesCovering(extent, zoom).length;
-  while (validZoom(zoom)) {
-    lastZoom = zoom;
-    zoom = zoom + 1;
-    numTiles = tilesCovering(extent, zoom).length;
-    if (numTiles > 1) {
-      return lastZoom;
-    }
-  }
-  if ( ! validZoom(zoom)) {
-    throw new Error("Couldn't find zoom for extent");
-  }
-  return zoom;
+function tileCoveringExtent(extent) {
+  var tilebelt = require('tilebelt');
+  var xyz = tilebelt.bboxToTile(extent);
+  return {
+    x: xyz[0],
+    y: xyz[1],
+    z: xyz[2]
+  };
 }
 
-function validZoom(zoom) {
-  return 0 <= zoom <= 16;
-}
+/**
 
-function tilesCovering(extent, zoom) {
-  return require('xyz-affair')(xyzExtent(extent), zoom);
-}
+#TODO
 
-// convert extent structure from [wsen] -> [[w,s], [e,n]]
-function xyzExtent(WSEN) {
-  return [[WSEN[0], WSEN[1]], [WSEN[2], WSEN[3]]];
-}
+This is somewhat of a naive solution in that it only gets one tile
+to cover the whole geometry. If the geometry is complex or much bigger
+in one dimension than the other, this will be suboptimal as most of the things
+we download from the tile will be thrown out because it's not within the
+geometry.
+
+tile-cover looks like a promising way of sometimes finding multiple tiles
+to cover the geometry. GeoCollection archives would then need to stream and
+merge multiple tile-archives, which is too complicated for me to do now.
+https://www.npmjs.com/package/tile-cover
+
+*/
