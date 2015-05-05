@@ -26,11 +26,11 @@ if (opts['--help']) {
   process.exit(1);
 }
 
+
 var geoCollectionOpts = {
   collection: collectionFromUrn(opts['<collection>']),
-  x: opts['<x>'],
-  y: opts['<y>'],
-  z: opts['<z>'],
+  tile: tileFromOpts(opts),
+  geometry: geometryFromOpts(opts)
 }
 
 if (opts.url) {
@@ -50,7 +50,7 @@ if (opts.fetch) {
 }
 
 if (opts.archive) {
-  geoCollection.archive(geoCollectionOpts)
+  createArchiveFromOpts(geoCollectionOpts)
   .on('error', function (err) {
     console.error(err);
     process.exit(1);
@@ -59,6 +59,20 @@ if (opts.archive) {
   .on('finish', function () {
     process.exit();
   });
+}
+
+function createArchiveFromOpts(opts) {
+  if (opts.geometry) {
+    var collection = new geoCollection.GeoCollection(
+      opts.collection,
+      opts.geometry
+    );
+    return collection.createArchive();
+  }
+  if (opts.tile) {
+    return geoCollection.createTileArchive(opts)    
+  }
+  throw new Error("Can't create archive from opts");
 }
 
 function collectionFromUrn(urn) {
@@ -79,4 +93,46 @@ function collectionFromUrn(urn) {
   return collection;
 }
 
+function tileFromOpts() {
+  if (opts['<tile>']) {
+    return parseTile(opts['<tile>']);
+  }
+  if (opts['<geometry>']) {
+    return require('../src/geometry-to-tile')(parseGeometry(opts['<geometry>']));
+  }
+  throw new Error("Couldn't determine tile from opts")
+}
 
+function parseTile(tileStr) {
+    // tile opt should be like "z,x,y"
+  var tile = tileStr.split(',')
+    .map(function (coord) { return parseFloat(coord, 10); })
+    .reduce(function (tile, coord, i) {
+      var dimension;
+      switch(i) {
+        case 0:
+          dimension = 'z';
+          break;
+        case 1:
+          dimension = 'x';
+          break;
+        case 2:
+          dimension = 'y';
+          break;
+      }
+      tile[dimension] = coord;
+      return tile;
+    }, {});
+  return tile;
+}
+
+function geometryFromOpts(opts) {
+  if (opts['<geometry>']) {
+    return parseGeometry(opts['<geometry>']);
+  }
+}
+
+function parseGeometry(geometryStr) {
+  var geometry = JSON.parse(geometryStr);
+  return geometry;
+}

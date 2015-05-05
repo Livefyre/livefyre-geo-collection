@@ -1,0 +1,49 @@
+{
+  "geometry": {
+    "type": "Point",
+    "coordinates": [
+      39.0392,
+      -95.6895
+    ]
+  },
+  "type": "Feature",
+  "properties": {
+    "source": 20,
+    "collectionId": "74714636",
+    "content": {
+      "generator": {
+        "url": "",
+        "image": "",
+        "displayName": "",
+        "id": "twitter.com"
+      },
+      "author": null,
+      "parentId": "",
+      "bodyHtml": "<p>\"It's hot.... in... Toooooopeeeeeeekaaaaa\" @ Topeka, Kansas <a href=\"https://t.co/9krIUVgf91\" target=\"_blank\" rel=\"nofollow\">instagram.com/p/196z4GghqJ/</a></p>",
+      "annotations": {
+        "tweetMeta": {
+          "language": "tl",
+          "tweetIdStr": "592568479540256769",
+          "created_at": "Mon Apr 27 05:58:29 +0000 2015",
+          "tweetId": 592568479540256800,
+          "in_reply_to_screen_name": "",
+          "verified_user": false,
+          "retweet_count": 0
+        },
+        "geocode": {
+          "latitude": 39.0392,
+          "name": "",
+          "longitude": -95.6895
+        },
+        "sortOrder": 1430777199.014599
+      },
+      "authorId": "238699945@twitter.com",
+      "updatedAt": 1430777199,
+      "id": "tweet-592568479540256769@twitter.com",
+      "createdAt": 1430114309
+    },
+    "vis": 1,
+    "type": 0,
+    "event": 1430777199094096
+  }
+}

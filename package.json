@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node test/*.js",
+    "test": "node test",
     "watch": "npm-watch"
   },
   "bin": {
@@ -17,7 +17,10 @@
   "license": "ISC",
   "dependencies": {
     "es6-promise": "^2.1.1",
-    "isomorphic-fetch": "^2.0.2"
+    "isomorphic-fetch": "^2.0.2",
+    "through2-filter": "^1.4.1",
+    "tilebelt": "^0.7.1",
+    "turf-extent": "^1.0.4"
   },
   "devDependencies": {
     "blue-tape": "^0.1.8",
@@ -25,6 +28,7 @@
     "docopt": "^0.6.2",
     "http-server": "^0.8.0",
     "npm-watch": "0.0.0",
+    "require-dir": "^0.3.0",
     "uglify-js": "^2.4.20",
     "zuul": "^2.1.1"
   },

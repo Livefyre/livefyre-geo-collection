@@ -1,20 +1,20 @@
 var Readable = require('stream').Readable;
 var fetchGeo = require('./fetch');
 
-module.exports = function (opts) {
+module.exports = function createTileArchive(opts) {
   var archive = new Readable({ objectMode: true });
   var max = 10;
   var paging = null;
   archive._read = function () {
     var hasPrev = paging && paging.hasPrev;
     if (paging) {
-      if (hasPrev) {
-        console.error(new Error('There is previous content but I dont yet know how to get it from the API! Ending for now #TODO'))
+      if ( ! hasPrev) {
+        // all done
         return archive.push(null);
-      } else {
-        // we done
-        return archive.push(null);        
       }
+      // add paging opts from last paging response
+      opts = Object.create(opts);
+      opts.until = Math.ceil(paging.prev);
     }
 
     fetchGeo(opts)
