@@ -3,22 +3,53 @@
 <h1>livefyre-geo-collection/examples/archive</h1>
 <main id="app"></main>
 
+<script id="kansas-geometry" type="text/json">
+{
+  "type": "Polygon",
+  "coordinates": [
+    [
+      [
+        -95.745849609375,
+        39.189690821096804
+      ],
+      [
+        -96.00677490234375,
+        38.90813299596705
+      ],
+      [
+        -95.50140380859374,
+        38.84826438869913
+      ],
+      [
+        -94.9932861328125,
+        38.94232097947902
+      ],
+      [
+        -95.02349853515625,
+        39.07464374293249
+      ],
+      [
+        -95.745849609375,
+        39.189690821096804
+      ]
+    ]
+  ]
+}
+</script>
 <script src="https://cdn.livefyre.com/Livefyre.js"></script>
 <script>
 Livefyre.require([
   '../dist/livefyre-geo-collection.js'],
 function (GeoCollection) {
   var appEl = document.getElementById('app');
-  var archive = GeoCollection.archive({
-    collection: {
-      network: 'labs.fyre.co',
-      siteId: 315833,
-      articleId: 'ben-geo-1'
+  var archive = new GeoCollection.GeoCollection(
+    {
+      network: 'labs-t402.fyre.co',
+      siteId: 303827,
+      articleId: 'uat-ben-geo-0'
     },
-    x: 3,
-    y: 1,
-    z: 3
-  });
+    kansasGeometry()
+  ).createArchive();
 
   archive.on('data', function (d) {
     var dataEl = renderArchiveData(d)
@@ -31,6 +62,11 @@ function (GeoCollection) {
     var text = document.createTextNode(formatted);
     el.appendChild(text);
     return el;
+  }
+
+  function kansasGeometry() {
+    var json = document.getElementById('kansas-geometry').innerText;
+    return JSON.parse(json)
   }
 })
 </script>

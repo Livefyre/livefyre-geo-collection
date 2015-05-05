@@ -26,11 +26,11 @@ if (opts['--help']) {
   process.exit(1);
 }
 
-var tile = tileFromOpts(opts);
 
 var geoCollectionOpts = {
   collection: collectionFromUrn(opts['<collection>']),
-  tile: tile
+  tile: tileFromOpts(opts),
+  geometry: geometryFromOpts(opts)
 }
 
 if (opts.url) {
@@ -50,7 +50,7 @@ if (opts.fetch) {
 }
 
 if (opts.archive) {
-  geoCollection.createTileArchive(geoCollectionOpts)
+  createArchiveFromOpts(geoCollectionOpts)
   .on('error', function (err) {
     console.error(err);
     process.exit(1);
@@ -59,6 +59,20 @@ if (opts.archive) {
   .on('finish', function () {
     process.exit();
   });
+}
+
+function createArchiveFromOpts(opts) {
+  if (opts.geometry) {
+    var collection = new geoCollection.GeoCollection(
+      opts.collection,
+      opts.geometry
+    );
+    return collection.createArchive();
+  }
+  if (opts.tile) {
+    return geoCollection.createTileArchive(opts)    
+  }
+  throw new Error("Can't create archive from opts");
 }
 
 function collectionFromUrn(urn) {
@@ -89,12 +103,6 @@ function tileFromOpts() {
   throw new Error("Couldn't determine tile from opts")
 }
 
-
-function parseGeometry(geometryStr) {
-  var geometry = JSON.parse(geometryStr);
-  return geometry;
-}
-
 function parseTile(tileStr) {
     // tile opt should be like "z,x,y"
   var tile = tileStr.split(',')
@@ -116,4 +124,15 @@ function parseTile(tileStr) {
       return tile;
     }, {});
   return tile;
+}
+
+function geometryFromOpts(opts) {
+  if (opts['<geometry>']) {
+    return parseGeometry(opts['<geometry>']);
+  }
+}
+
+function parseGeometry(geometryStr) {
+  var geometry = JSON.parse(geometryStr);
+  return geometry;
 }
