@@ -53,7 +53,7 @@
             <option value="50000">50000 Meters</option>
           </select>
           <button type="submit" class="btn" id="submit-radius">
-          Create Circle
+          Create Wall
           </button>
         </div>
       </form>
@@ -157,10 +157,42 @@ geoError = function () {
 $('#radius-form').submit(function (e) {
   e.preventDefault();
   var radius = parseFloat($('#radius').val(), 10);
-  drawCircle(radius, geoCoords);
+  //drawCircle(radius, geoCoords);
+  renderMediawall(radius, geoCoords);
 });
 
 
+renderMediawall = function (radius, geoCoords) {
+  var geometry = createPolydata(radius, geoCoords);
+  Livefyre.require([
+    '../dist/livefyre-geo-collection.js'],
+  function (GeoCollection) {
+    var appEl = document.getElementById('app');
+    var geoCollection = new (GeoCollection.GeoCollection)(
+      {
+        network: 'labs-t402.fyre.co',
+        siteId: 303827,
+        articleId: 'uat-ben-geo-0'
+      },
+      geometry
+    );
+    var archive = geoCollection.createArchive();
+
+    archive.on('data', function (d) {
+      var dataEl = renderArchiveData(d)
+      appEl.insertBefore(dataEl, appEl.firstChild);
+    });
+
+    function renderArchiveData(data) {
+      var el = document.createElement('pre');
+      var formatted = JSON.stringify(JSON.parse(data), null, 2);
+      var text = document.createTextNode(formatted);
+      el.appendChild(text);
+      return el;
+    }
+  })
+
+}
 showDistanceForm = function () {
   $('#js-distance-wrapper').show();
 }
@@ -201,25 +233,20 @@ function angularRadiusFromSurfaceRadius(surfaceRadius) {
 
 }
 
-drawCircle = function (r, geoCoords) {
-//http://geojsonlint.com/
-var angularRadius = angularRadiusFromSurfaceRadius(r);
-
-var geoCircle = d3.geo.circle()
+createPolydata = function (r, geoCoords) {
+  var angularRadius = angularRadiusFromSurfaceRadius(r);
+  var geoPoly = d3.geo.circle()
   .origin([geoCoords.y,geoCoords.x])
   .angle(angularRadius)();
+  return geoPoly;
+}
 
- //var jsonCircles = [{ "x_axis": 30, "y_axis": 30, "radius": r, "color" : "purple" }];
-
-// var circles = svgContainer.selectAll("circle")
-//   .data(jsonCircles)
-//   .enter()
-//   .append("circle");
-
+drawCircle = function (r, geoCoords) {
+//http://geojsonlint.com/
+  var angularRadius = angularRadiusFromSurfaceRadius(r);
   //Make an SVG Container
   var shapeContainer = document.getElementById('shape');
   var svgContainer = d3.select(shapeContainer).append("svg").attr("width", 200).attr("height", 200);
-
  //Draw the Circle
  var circle = svgContainer.append("circle").attr("cx", 30).attr("cy", 30).attr("r", 20).style("fill", "purple");
 
@@ -232,9 +259,6 @@ var data = {
         "radius_units": "meters"
       }
   };
-
-  console.log(geoCircle);
-
   geoDataUI(data);
 
 };
@@ -309,34 +333,34 @@ function (Wall, GeoCollection) {
 
 <script>
 
-Livefyre.require([
-  '../dist/livefyre-geo-collection.js'],
-function (GeoCollection) {
-  var appEl = document.getElementById('app');
-  var archive = GeoCollection.archive({
-    collection: {
-      network: 'labs.fyre.co',
-      siteId: 315833,
-      articleId: 'ben-geo-1'
-    },
-    x: 3,
-    y: 1,
-    z: 3
-  });
+// Livefyre.require([
+//   '../dist/livefyre-geo-collection.js'],
+// function (GeoCollection) {
+//   var appEl = document.getElementById('app');
+//   var archive = GeoCollection.archive({
+//     collection: {
+//       network: 'labs.fyre.co',
+//       siteId: 315833,
+//       articleId: 'ben-geo-1'
+//     },
+//     x: 3,
+//     y: 1,
+//     z: 3
+//   });
 
-  archive.on('data', function (d) {
-    var dataEl = renderArchiveData(d)
-    appEl.insertBefore(dataEl, appEl.firstChild);
-  });
+//   archive.on('data', function (d) {
+//     var dataEl = renderArchiveData(d)
+//     appEl.insertBefore(dataEl, appEl.firstChild);
+//   });
 
-  function renderArchiveData(data) {
-    var el = document.createElement('pre');
-    var formatted = JSON.stringify(JSON.parse(data), null, 2);
-    var text = document.createTextNode(formatted);
-    el.appendChild(text);
-    return el;
-  }
-})
+//   function renderArchiveData(data) {
+//     var el = document.createElement('pre');
+//     var formatted = JSON.stringify(JSON.parse(data), null, 2);
+//     var text = document.createTextNode(formatted);
+//     el.appendChild(text);
+//     return el;
+//   }
+// })
 </script>
 
 <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
