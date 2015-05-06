@@ -47,7 +47,7 @@
             <form class="form-inline" role="form" id="radius-form">
                 <div class="form-group">
                     <label for="distance">Distance: </label>
-                    <input class="" value="" id="distance" />
+                    <input class="" value="" id="distance" placeholder=".1" />
                     <select id="units">
                         <option value="km">km</option>
                         <option value="mi">mi</option>
@@ -166,7 +166,7 @@
     }
 
     function createPoly(distance, unitType, geoCoords) {
-        var handleSubmit, validateDistance, convertDistanceToMeters, angularRadiusFromSurfaceRadius, createPolydata, renderMediawall;
+        var handleSubmit, validateDistance, convertDistanceToMeters, angularRadiusFromSurfaceRadius, createPolydata, renderMediawall, validateJSON;
 
         handleSubmit = function(distance, unitType, geoCoords) {
             var radiusInMeters, validInput, angleDegrees, geometry;
@@ -177,8 +177,7 @@
             if (validInput) {
                 angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
                 geometry = createPolydata(angleDegrees, geoCoords);
-                renderMediawall(geometry);
-                console.log(JSON.stringify(geometry));
+                validateJSON(geometry);
             } else {
                 $('.error').text('The circumfrence of the earth isn\'t even that big! Try something smaller.');
                 return;
@@ -187,7 +186,8 @@
 
         validateDistance = function(r) {
             var MAX = 40075000;
-            return (r < MAX) ? true : false;
+            var MIN = .1;
+            return (r < MAX && r > MIN) ? true : false;
         };
 
         convertDistanceToMeters = function(distance, unitType) {
@@ -219,6 +219,40 @@
             return geoPoly;
         };
 
+        validateJSON = function (polyJSON) {
+          var geoJSON = {
+            "type": "FeatureCollection",
+              "features": [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": polyJSON
+              }]
+            };
+            console.log(JSON.stringify(geoJSON));
+
+          function processSuccess(data) {
+              if (data.status === 'ok') {
+                renderMediawall(polyJSON);
+                console.log(JSON.stringify(polyJSON));
+              } else if (data.status === 'error') {
+                  alert('There was a problem with your GeoJSON: ' + data.message);
+              }
+          }
+
+          function processError() {
+              alert('There was a problem with your ajax.');
+          }
+
+          $.ajax({
+              url: 'http://geojsonlint.com/validate',
+              type: 'POST',
+              data: JSON.stringify(geoJSON),
+              dataType: 'json',
+              success: processSuccess,
+              error: processError
+          });
+
+        }
         renderMediawall = function(geometry) {
 
           Livefyre.require([
