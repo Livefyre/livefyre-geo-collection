@@ -51,14 +51,26 @@ if (opts.fetch) {
 
 if (opts.archive) {
   createArchiveFromOpts(geoCollectionOpts)
-  .on('error', function (err) {
-    console.error(err);
-    process.exit(1);
-  })
+  .on('error', handleArchiveError)
+  .pipe(require('through2').obj(function (state, encoding, next) {
+    // convert to json strings
+    try {
+      this.push(JSON.stringify(state));      
+    } catch (e) {
+      return next(e);
+    }
+    next();
+  }))
+  .on('error', handleArchiveError)
   .pipe(process.stdout)
+  .on('error', handleArchiveError)
   .on('finish', function () {
     process.exit();
   });
+  function handleArchiveError(err) {
+    console.error(err);
+    process.exit(1);
+  }
 }
 
 function createArchiveFromOpts(opts) {
