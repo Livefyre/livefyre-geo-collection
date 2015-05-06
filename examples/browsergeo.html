@@ -177,7 +177,7 @@
             if (validInput) {
                 angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
                 geometry = createPolydata(angleDegrees, geoCoords);
-                validateJSON(geometry);
+                validateGeoJSON(geometry);
             } else {
                 $('.error').text('The circumfrence of the earth isn\'t even that big! Try something smaller.');
                 return;
@@ -219,7 +219,7 @@
             return geoPoly;
         };
 
-        validateJSON = function (polyJSON) {
+        validateGeoJSON = function (polyJSON) {
           var geoJSON = {
             "type": "FeatureCollection",
               "features": [{
