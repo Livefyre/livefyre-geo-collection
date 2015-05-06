@@ -3,10 +3,15 @@
 
 <head>
     <link rel="stylesheet" type="text/css" href="http://s.codepen.io/assets/reset/normalize.css" />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
     <style>
     ul {
         list-style-type: none;
         font-size: 18px;
+    }
+
+    #map {
+      height: 300px;
     }
 
     #loader {
@@ -32,14 +37,36 @@
 <body>
     <h1>livefyre-geo-collection/examples/browsergeo.html</h1>
     <div id="geo">
-        <button id="js-your-pos">Find Your Location</button>
+      <form class="form-inline" role="form" id="zoom-form">
+            <div class="form-group">
+                <label for="zoom">Zoom: </label>
+                <select id="zoom">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                </select>
+                <button type="submit" class="btn" id="js-your-pos">Find Your Location</button>
+            </div>
+        </form>
         <div id="loader"></div>
         <div id="js-location-wrapper">
             <h2>Your Geo Point Coordinates</h2>
             <ul>
                 <li id="js-your-lat">Latitude: <span></span></li>
                 <li id="js-your-lon">Longitude: <span></span></li>
-                <li id="js-your-zoom">Z: <span></span></li>
+                <li id="js-your-zoom">Zoom: <span></span></li>
             </ul>
         </div>
         <div id="js-distance-wrapper">
@@ -59,6 +86,7 @@
             </form>
             <p class="error"></p>
         </div>
+        <div id="map"></div>
         <div id="js-polygon-wrapper">
             <h2>Your Circle</h2>
             <ul>
@@ -76,6 +104,7 @@
     <main id="app"></main>
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
     <script src="https://cdn.livefyre.com/Livefyre.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
     <script>
@@ -89,29 +118,32 @@
         nope: 'http://client-solutions.livefyre.com/cid/maps/geo-polyfill.js'
     });
 
+    var map;
     var geoCoords = {};
 
-    function getYourLocation(geoCoords) {
+    function getYourLocation(geoCoords, map, zoomLevel) {
 
-        var deferGeo, geoSuccess, geoError, geoUpdateUI, resolvePromise, rejectPromise, showDistanceForm, toggleLoader, getPos;
+        var deferGeo, geoSuccess, geoError, geoUpdateUI, resolvePromise, rejectPromise, showDistanceForm, toggleLoader, renderMap, getPos;
 
         deferGeo = new $.Deferred;
 
         resolvePromise = function() {
+          console.log('resolved')
             deferGeo.resolve();
         };
 
         rejectPromise = function() {
+          console.log('rejected')
             deferGeo.reject();
         };
 
-        geoSuccess = function(x, y, z, geoCoords) {
-            if (!z) {
-              z = 1;
+        geoSuccess = function(x, y, zoomLevel, geoCoords) {
+            if (!zoomLevel) {
+              zoomLevel = 1;
             }
             geoCoords.x = x;
             geoCoords.y = y;
-            geoCoords.z = z;
+            geoCoords.z = zoomLevel;
             geoUpdateUI(geoCoords);
             resolvePromise();
         };
@@ -135,16 +167,34 @@
             $('#loader').toggleClass('visible');
         };
 
+        renderMap = function (geoCoords) {
+
+          map = window.map = L.map('map').setView([geoCoords.x, geoCoords.y], geoCoords.z);
+
+          // add an OpenStreetMap tile layer
+          L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(map);
+
+          // add a marker in the given location, attach some popup content to it and open the popup
+          L.marker([geoCoords.x, geoCoords.y]).addTo(map)
+          .bindPopup('You are here.')
+          .openPopup();
+
+          $('#map').show();
+
+        };
+
         getPos = function(deferGeo) {
             navigator.geolocation.getCurrentPosition(
                 function(pos) {
-                    geoSuccess(pos.coords.latitude, pos.coords.longitude, null, geoCoords);
+                    geoSuccess(pos.coords.latitude, pos.coords.longitude, zoomLevel, geoCoords);
                 },
                 function() {
                     geoError();
                 }, {
                     maximumAge: 60000,
-                    timeout: 5000,
+                    timeout: 10000,
                     enableHighAccuracy: true
                 }
             );
@@ -153,7 +203,8 @@
         };
 
         deferGeo.done(function() {
-                showDistanceForm();
+                renderMap(geoCoords);
+                showDistanceForm(geoCoords);
             })
             .fail(function() {})
             .always(function() {
@@ -165,8 +216,9 @@
 
     }
 
-    function createPoly(distance, unitType, geoCoords) {
-        var handleSubmit, validateDistance, convertDistanceToMeters, angularRadiusFromSurfaceRadius, createPolydata, renderMediawall, validateGeoJSON;
+    function createPoly(distance, unitType, geoCoords, map) {
+
+        var handleSubmit, validateDistance, convertDistanceToMeters, angularRadiusFromSurfaceRadius, createPolydata, renderMediawall, validateGeoJSON, addGeoJsonToMap;
 
         handleSubmit = function(distance, unitType, geoCoords) {
             var radiusInMeters, validInput, angleDegrees, geometry;
@@ -215,44 +267,58 @@
         createPolydata = function(angle, geoCoords) {
             var geoPoly = d3.geo.circle()
                 .origin([geoCoords.y, geoCoords.x])
-                .angle(angle)();
+                .angle(angle).precision(1)();
             return geoPoly;
         };
 
         validateGeoJSON = function (polyJSON) {
+
+          var processSuccess, processError;
           var geoJSON = {
-            "type": "FeatureCollection",
-              "features": [{
-                "type": "Feature",
-                "properties": {},
-                "geometry": polyJSON
+            type: "FeatureCollection",
+              features: [{
+                type: "Feature",
+                properties: {},
+                geometry: polyJSON
               }]
             };
-            console.log(JSON.stringify(geoJSON));
 
-          function processSuccess(data) {
-              if (data.status === 'ok') {
+            geoJSON = JSON.stringify(geoJSON);
+            console.log(geoJSON);
+
+
+                addGeoJsonToMap(polyJSON);
                 renderMediawall(polyJSON);
-                console.log(JSON.stringify(polyJSON));
+
+          processSuccess = function (data) {
+              if (data.status === 'ok') {
+                addGeoJsonToMap(polyJSON);
+                renderMediawall(polyJSON);
+                console.log(geoJSON);
               } else if (data.status === 'error') {
                   alert('There was a problem with your GeoJSON: ' + data.message);
               }
           }
 
-          function processError() {
+          processError = function () {
               alert('There was a problem with your ajax.');
           }
 
-          $.ajax({
-              url: 'http://geojsonlint.com/validate',
-              type: 'POST',
-              data: JSON.stringify(geoJSON),
-              dataType: 'json',
-              success: processSuccess,
-              error: processError
-          });
+          // $.ajax({
+          //     url: 'http://geojsonlint.com/validate',
+          //     type: 'POST',
+          //     data: geoJSON,
+          //     dataType: 'json',
+          //     success: processSuccess,
+          //     error: processError
+          // });
 
-        }
+        };
+
+        addGeoJsonToMap = function (polyJSON, map) {
+          L.geoJson(polyJSON).addTo(window.map);
+        };
+
         renderMediawall = function(geometry) {
 
           Livefyre.require([
@@ -291,18 +357,20 @@
     }
 
     // click event handlers
-    $('body').on('click', '#js-your-pos', function(e) {
-        getYourLocation(geoCoords);
+    $('#zoom-form').submit(function(e) {
+        e.preventDefault();
+        var zoomLevel = $('#zoom').val();
+        getYourLocation(geoCoords, map, zoomLevel);
     });
 
     $('#radius-form').submit(function(e) {
         e.preventDefault();
         var distance, unitType;
-
-        distance = (parseFloat($('#distance').val(), 10)) > 0 ? parseFloat($('#distance').val(), 10) : 0.1;
+        distance = parseFloat($('#distance').val(), 10);
+        distance =  (distance > 0) ? distance : 0.1;
         unitType = $('#units').val();
         $('.error').text('');
-        createPoly(distance, unitType, geoCoords);
+        createPoly(distance, unitType, geoCoords, map);
     });
 
     /* object we want when with geoData
