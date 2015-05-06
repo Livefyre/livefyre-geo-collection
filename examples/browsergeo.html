@@ -1,370 +1,375 @@
 <!doctype html>
 <html>
+
 <head>
-<link rel="stylesheet" type="text/css" href="http://s.codepen.io/assets/reset/normalize.css" />
-  <style>
+    <link rel="stylesheet" type="text/css" href="http://s.codepen.io/assets/reset/normalize.css" />
+    <style>
     ul {
-    list-style-type: none;
-    font-size: 18px;
-  }
+        list-style-type: none;
+        font-size: 18px;
+    }
 
-  #loader {
-    background: url('http://client-solutions.livefyre.com/cid/maps/ajax-loader.gif') center center no-repeat transparent;
-    width: 16px;
-    height: 16px;
-    display: block;
-    visibility: hidden;
-  }
+    #loader {
+        background: url('http://client-solutions.livefyre.com/cid/maps/ajax-loader.gif') center center no-repeat transparent;
+        width: 16px;
+        height: 16px;
+        display: block;
+        visibility: hidden;
+    }
 
-  .visible {
-    visibility: visible !important;
-  }
+    .visible {
+        visibility: visible !important;
+    }
 
-  #js-distance-wrapper,
-  #js-polygon-wrapper,
-  #js-location-wrapper{
-    display: none;
-  }
-  </style>
+    #js-distance-wrapper,
+    #js-polygon-wrapper,
+    #js-location-wrapper {
+        display: none;
+    }
+    </style>
 </head>
+
 <body>
-<h1>livefyre-geo-collection/examples/browsergeo.html</h1>
-  <div id="geo">
-    <button id="js-your-pos">Find Your Location</button>
-    <div id="loader"></div>
-
-    <div id="js-location-wrapper">
-      <h2>Your Geo Point Coordinates</h2>
-      <ul>
-        <li id="js-your-lat">X: <span></span></li>
-        <li id="js-your-lon">Y: <span></span></li>
-        <li id="js-your-zoom">Z: <span></span></li>
-      </ul>
-    </div>
-
-    <div id="js-distance-wrapper">
-      <h2>Enter Disctance From You</h2>
-      <form class="form-inline" role="form" id="radius-form">
-        <div class="form-group">
-          <label for="disctance">Radius: </label>
-          <select id="radius">
-            <option value="1000">1000 Meters</option>
-            <option value="2000">2000 Meters</option>
-            <option value="5000">5000 Meters</option>
-          </select>
-          <button type="submit" class="btn" id="submit-radius">
-          Create Wall
-          </button>
+    <h1>livefyre-geo-collection/examples/browsergeo.html</h1>
+    <div id="geo">
+        <button id="js-your-pos">Find Your Location</button>
+        <div id="loader"></div>
+        <div id="js-location-wrapper">
+            <h2>Your Geo Point Coordinates</h2>
+            <ul>
+                <li id="js-your-lat">Latitude: <span></span></li>
+                <li id="js-your-lon">Longitude: <span></span></li>
+                <li id="js-your-zoom">Z: <span></span></li>
+            </ul>
         </div>
-      </form>
-   </div>
-
-    <div id="js-polygon-wrapper">
-        <h2>Your Circle</h2>
-      <ul>
-        <li id="shape-type">Shape: <span></span></li>
-        <li id="shape-coordinates">Coodinates: [<span></span>]</li>
-        <li id="shape-radius">Radius: <span></span></li>
-        <li id="shape-angular-radius" >Angular Radius: <span></span></li>
-      </ul>
-
-<!--       <svg width="50" height="50">
+        <div id="js-distance-wrapper">
+            <h2>Enter Distance From You</h2>
+            <form class="form-inline" role="form" id="radius-form">
+                <div class="form-group">
+                    <label for="distance">Distance: </label>
+                    <input class="" value="" id="distance" />
+                    <select id="units">
+                        <option value="km">km</option>
+                        <option value="mi">mi</option>
+                    </select>
+                    <button type="submit" class="btn" id="submit-radius">
+                        Create Wall
+                    </button>
+                </div>
+            </form>
+            <p class="error"></p>
+        </div>
+        <div id="js-polygon-wrapper">
+            <h2>Your Circle</h2>
+            <ul>
+                <li id="shape-type">Shape: <span></span></li>
+                <li id="shape-coordinates">Coodinates: [<span></span>]</li>
+                <li id="shape-radius">Radius: <span></span></li>
+                <li id="shape-angular-radius">Angular Radius: <span></span></li>
+            </ul>
+            <!--       <svg width="50" height="50">
         <circle cx="25" cy="25" r="25" fill="purple" />
       </svg> -->
+        </div>
     </div>
+    <div id="shape"></div>
+    <main id="app"></main>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
+    <script src="https://cdn.livefyre.com/Livefyre.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+    <script>
 
-  </div>
-<div id="shape"></div>
-<main id="app"></main>
+    'use strict';
 
-<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-<script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
-<script src="https://cdn.livefyre.com/Livefyre.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
-
-<script>
-// Polly Fill if browser doesn't support geo
-Modernizr.load({
-  test: Modernizr.geolocation,
-  yep : '',
-  nope: 'http://client-solutions.livefyre.com/cid/maps/geo-polyfill.js'
-});
-
-
-var deferGeo, geoSuccess, geoError, geoUpdateUI, resolvePromise, rejectPromise, showDistanceForm, toggleLoader, drawCircle, geoCoords, geoDataUI;
-
-geoCoords = {};
-
-deferGeo = new $.Deferred;
-
-resolvePromise = function () {
-  deferGeo.resolve();
-};
-
-rejectPromise = function () {
-  deferGeo.reject();
-};
-
-geoUpdateUI = function (data) {
-  $('#js-your-lat > span').text(data.x);
-  $('#js-your-lon > span').text(data.y);
-  $('#js-your-zoom > span').text(data.z);
-  $('#js-location-wrapper').show();
-};
-
-geoDataUI = function (data) {
-  $('#js-polygon-wrapper').show();
-  $('#shape-type span').text(data.type);
-  $('#shape-coordinates span').text(data.coordinates);
-  $('#shape-radius span').text(data.radius + ' ' + data.properties.radius_units);
-  $('#shape-angular-radius span').text(data.angularRadius);
-}
-
-geoSuccess = function (x, y, z, geoCoords) {
-
-  if (!z) {
-    var z = 1;
-  }
-
-  geoCoords.x = x;
-  geoCoords.y = y;
-  geoCoords.z = z;
-  geoUpdateUI(geoCoords);
-  resolvePromise();
-}
-
-geoError = function () {
-  rejectPromise();
-}
-
- // Bind the Event
- $('body').on('click', '#js-your-pos', function (e) {
-  toggleLoader();
-  navigator.geolocation.getCurrentPosition(
-    function (pos) {
-      geoSuccess(pos.coords.latitude, pos.coords.longitude, null, geoCoords);
-    }, function () {
-      geoError();
-    }, {
-      maximumAge: 60000,
-      timeout: 5000,
-      enableHighAccuracy: true
-    }
-  );
-   return deferGeo.promise();
- });
-
-$('#radius-form').submit(function (e) {
-  e.preventDefault();
-  var radius = parseFloat($('#radius').val(), 10);
-  //drawCircle(radius, geoCoords);
-  renderMediawall(radius, geoCoords);
-});
-
-
-renderMediawall = function (radius, geoCoords) {
-  var geometry = createPolydata(radius, geoCoords);
-  Livefyre.require([
-    '../dist/livefyre-geo-collection.js'],
-  function (GeoCollection) {
-    var appEl = document.getElementById('app');
-    var geoCollection = new (GeoCollection.GeoCollection)(
-      {
-        network: 'labs-t402.fyre.co',
-        siteId: 303827,
-        articleId: 'uat-ben-geo-0'
-      },
-      geometry
-    );
-
-    var archive = geoCollection.createArchive();
-
-    archive.on('data', function (d) {
-      var dataEl = renderArchiveData(d)
-      appEl.insertBefore(dataEl, appEl.firstChild);
+    // Polly Fill if browser doesn't support geo
+    Modernizr.load({
+        test: Modernizr.geolocation,
+        yep: '',
+        nope: 'http://client-solutions.livefyre.com/cid/maps/geo-polyfill.js'
     });
 
-    function renderArchiveData(data) {
-      var el = document.createElement('pre');
-      var formatted = JSON.stringify(JSON.parse(data), null, 2);
-      var text = document.createTextNode(formatted);
-      el.appendChild(text);
-      return el;
+    var geoCoords = {};
+
+    function getYourLocation(geoCoords) {
+
+        var deferGeo, geoSuccess, geoError, geoUpdateUI, resolvePromise, rejectPromise, showDistanceForm, toggleLoader, getPos;
+
+        deferGeo = new $.Deferred;
+
+        resolvePromise = function() {
+            deferGeo.resolve();
+        };
+
+        rejectPromise = function() {
+            deferGeo.reject();
+        };
+
+        geoSuccess = function(x, y, z, geoCoords) {
+            if (!z) {
+              z = 1;
+            }
+            geoCoords.x = x;
+            geoCoords.y = y;
+            geoCoords.z = z;
+            geoUpdateUI(geoCoords);
+            resolvePromise();
+        };
+
+        geoUpdateUI = function(data) {
+            $('#js-your-lat > span').text(data.x);
+            $('#js-your-lon > span').text(data.y);
+            $('#js-your-zoom > span').text(data.z);
+            $('#js-location-wrapper').show();
+        };
+
+        geoError = function() {
+            rejectPromise();
+        };
+
+        showDistanceForm = function() {
+            $('#js-distance-wrapper').show();
+        };
+
+        toggleLoader = function() {
+            $('#loader').toggleClass('visible');
+        };
+
+        getPos = function(deferGeo) {
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    geoSuccess(pos.coords.latitude, pos.coords.longitude, null, geoCoords);
+                },
+                function() {
+                    geoError();
+                }, {
+                    maximumAge: 60000,
+                    timeout: 5000,
+                    enableHighAccuracy: true
+                }
+            );
+
+            return deferGeo.promise();
+        };
+
+        deferGeo.done(function() {
+                showDistanceForm();
+            })
+            .fail(function() {})
+            .always(function() {
+                toggleLoader();
+            });
+
+        toggleLoader();
+        getPos(deferGeo);
+
     }
-  })
 
-}
-showDistanceForm = function () {
-  $('#js-distance-wrapper').show();
-}
+    function createPoly(distance, unitType, geoCoords) {
+        var handleSubmit, validateDistance, convertDistanceToMeters, angularRadiusFromSurfaceRadius, createPolydata, renderMediawall;
 
-toggleLoader = function () {
-  $('#loader').toggleClass('visible');
-}
+        handleSubmit = function(distance, unitType, geoCoords) {
+            var radiusInMeters, validInput, angleDegrees, geometry;
 
-deferGeo.done(function() {
-  showDistanceForm();
-  })
-  .fail(function() {
-  })
-  .always(function () {
-    toggleLoader();
-  });
+            radiusInMeters = convertDistanceToMeters(distance, unitType);
+            validInput = validateDistance(radiusInMeters);
 
+            if (validInput) {
+                angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
+                geometry = createPolydata(angleDegrees, geoCoords);
+                renderMediawall(geometry);
+                console.log(JSON.stringify(geometry));
+            } else {
+                $('.error').text('The circumfrence of the earth isn\'t even that big! Try something smaller.');
+                return;
+            }
+        };
 
-function angularRadiusFromSurfaceRadius(surfaceRadius) {
-  //surfaceRadius should be in same unit as CIRCUMEFERENCE_OF_EARTH
-  //var CIRCUMEFERENCE_OF_EARTH_KM = 40075;
-  //var CIRCUMEFERENCE_OF_EARTH_M = CIRCUMEFERENCE_OF_EARTH_KM * 1000;
+        validateDistance = function(r) {
+            var MAX = 40075000;
+            return (r < MAX) ? true : false;
+        };
 
-  var DISTANCE_TO_CENTER_OF_EARTH_KM = 6371;
-  var DISTANCE_TO_CENTER_OF_EARTH_M = DISTANCE_TO_CENTER_OF_EARTH_KM * 1000;
+        convertDistanceToMeters = function(distance, unitType) {
+            var distMeters;
+            if (unitType === 'km') {
+                distMeters = distance * 1000;
+            } else if (unitType === 'mi') {
+                distMeters = distance * 1609.34;
+            }
+            return distMeters;
+        };
+        angularRadiusFromSurfaceRadius = function(surfaceRadius) {
+            var DISTANCE_TO_CENTER_OF_EARTH_METERS = 6371000;
+            //var DISTANCE_TO_CENTER_OF_EARTH_M = DISTANCE_TO_CENTER_OF_EARTH_KM * 1000;
+            //surfaceRadius should be in same unit as CIRCUMEFERENCE_OF_EARTH
+            //var CIRCUMEFERENCE_OF_EARTH_KM = 40075;
+            //var CIRCUMEFERENCE_OF_EARTH_M = CIRCUMEFERENCE_OF_EARTH_KM * 1000;
+            //var DIAMETER_OF_EARTH_KM = 12756.2;
+            //var DIAMETER_OF_EARTH_M = DIAMETER_OF_EARTH_KM * 1000;
+            //1000 = CIRCUMEFERENCE_RADIUS_OF_EARTH_M * a,
+            var angle = ((surfaceRadius / DISTANCE_TO_CENTER_OF_EARTH_METERS * 180)) / Math.PI;
+            return angle;
+        };
 
-  var DIAMETER_OF_EARTH_KM = 12756.2;
-  //var DIAMETER_OF_EARTH_M = DIAMETER_OF_EARTH_KM * 1000;
+        createPolydata = function(angle, geoCoords) {
+            var geoPoly = d3.geo.circle()
+                .origin([geoCoords.y, geoCoords.x])
+                .angle(angle)();
+            return geoPoly;
+        };
 
-  //1000 = CIRCUMEFERENCE_RADIUS_OF_EARTH_M * a,
-  var angle =  ((surfaceRadius / DISTANCE_TO_CENTER_OF_EARTH_M * 180)) / Math.PI;
+        renderMediawall = function(geometry) {
 
-  // var partOfCircumference = rM / CIRCUMEFERENCE_OF_EARTH_M
-  // var angularRadius = partOfCircumference * (Math.PI * 2);
-  // console.log(' angularRadius: ' + angularRadius + ' angleRadians: ' + angleRaians + ' angleDegrees: ' + angleDegrees);
+          Livefyre.require([
+                  '../dist/livefyre-geo-collection.js'
+              ],
+              function(GeoCollection) {
+                  var appEl = document.getElementById('app');
+                  var geoCollection = new(GeoCollection.GeoCollection)({
+                          network: 'labs-t402.fyre.co',
+                          siteId: 303827,
+                          articleId: 'uat-ben-geo-0'
+                      },
+                      geometry
+                  );
 
-  return angle;
+                  var archive = geoCollection.createArchive();
 
-}
+                  archive.on('data', function(d) {
+                      var dataEl = renderArchiveData(d);
+                      appEl.insertBefore(dataEl, appEl.firstChild);
+                  });
 
-createPolydata = function (r, geoCoords) {
-  var angularRadius = angularRadiusFromSurfaceRadius(r);
-  var geoPoly = d3.geo.circle()
-  .origin([geoCoords.y,geoCoords.x])
-  .angle(angularRadius)();
-  return geoPoly;
-}
+                  function renderArchiveData(data) {
+                      var el = document.createElement('pre');
+                      var formatted = JSON.stringify(JSON.parse(data), null, 2);
+                      var text = document.createTextNode(formatted);
+                      el.appendChild(text);
+                      return el;
+                  }
+              });
 
-drawCircle = function (r, geoCoords) {
-//http://geojsonlint.com/
-  var angularRadius = angularRadiusFromSurfaceRadius(r);
-  //Make an SVG Container
-  var shapeContainer = document.getElementById('shape');
-  var svgContainer = d3.select(shapeContainer).append("svg").attr("width", 200).attr("height", 200);
- //Draw the Circle
- var circle = svgContainer.append("circle").attr("cx", 30).attr("cy", 30).attr("r", 20).style("fill", "purple");
+        };
 
-var data = {
-    "type": "Polygon",
-    "coordinates": [ geoCoords.y, geoCoords.x ],
-     "radius": r,
-     "angularRadius": angularRadius,
-     "properties": {
-        "radius_units": "meters"
-      }
-  };
-  geoDataUI(data);
+        handleSubmit(distance, unitType, geoCoords);
 
-};
-
-/* object we want when with geoData
-
- Circle
- ------------------
-
- { "type": "Circle",
-   "coordinates": [ 100.0, 0.0 ],
-   "radius": 0.5,
-   "properties": {
-          "radius_units": "km"
-   }
-}
-*/
-/*
-var geojsonFeature = {
-    "type": "Feature",
-    "properties": {
-        "name": "Coors Field",
-        "amenity": "Baseball Stadium",
-        "popupContent": "This is where the Rockies play!"
-    },
-    "geometry": {
-        "type": "Point",
-        "coordinates": [-104.99404, 39.75621]
     }
-};
 
-*/
-/* GOAL
-  reference media wall call
+    // click event handlers
+    $('body').on('click', '#js-your-pos', function(e) {
+        getYourLocation(geoCoords);
+    });
+
+    $('#radius-form').submit(function(e) {
+        e.preventDefault();
+        var distance, unitType;
+        distance = parseFloat($('#distance').val(), 10);
+        unitType = $('#units').val();
+        $('.error').text('');
+        createPoly(distance, unitType, geoCoords);
+    });
+
+    /* object we want when with geoData
+
+     Circle
+     ------------------
+
+     { "type": "Circle",
+       "coordinates": [ 100.0, 0.0 ],
+       "radius": 0.5,
+       "properties": {
+              "radius_units": "km"
+       }
+    }
+    */
+    /*
+    var geojsonFeature = {
+        "type": "Feature",
+        "properties": {
+            "name": "Coors Field",
+            "amenity": "Baseball Stadium",
+            "popupContent": "This is where the Rockies play!"
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-104.99404, 39.75621]
+        }
+    };
+
+    */
+    /* GOAL
+      reference media wall call
+        Livefyre.require([
+          'streamhub-wall#3',
+          'streamhub-sdk#2.13.8'
+        ], function (LiveMediaWall, SDK){
+
+          var wall = new LiveMediaWall({
+            el: document.getElementById('wall'),
+            collection: new (SDK.Collection)({
+                network:'labs.fyre.co',
+                siteId: 315833,
+                articleId: 'ben-geo-0'
+            })
+          });
+        });
+    */
+
+    /* TODO
+    https://github.com/mbostock/d3/blob/3abb00113662463e5c19eb87cd33f6d0ddc23bc0/src/geo/circle.js
+
+    create ploygon centererd on user's point with x and y distance from select menu as multiplier and deliver X: [x-coord, y-coord], Y: [x-coord, y-coord], Z: [x-coord, y-coord] points to create proper geoJSON Polygonas call for:
+
     Livefyre.require([
       'streamhub-wall#3',
-      'streamhub-sdk#2.13.8'
-    ], function (LiveMediaWall, SDK){
-
-      var wall = new LiveMediaWall({
-        el: document.getElementById('wall'),
-        collection: new (SDK.Collection)({
-            network:'labs.fyre.co',
-            siteId: 315833,
-            articleId: 'ben-geo-0'
+      'livefyre-geo-collection#1'],
+    function (Wall, GeoCollection) {
+      new Wall({
+        el: document.getElement('wall'),
+        collection: GeoCollection({
+          network: 'labs.fyre.co',
+          siteId: 315833,
+          articleId: 'ben-geo-0'
+          geometry: d3.geo.circle(center, radius, precision)
         })
-      });
+      })
     });
-*/
+    */
+    </script>
+    <script>
+    // Livefyre.require([
+    //   '../dist/livefyre-geo-collection.js'],
+    // function (GeoCollection) {
+    //   var appEl = document.getElementById('app');
+    //   var archive = GeoCollection.archive({
+    //     collection: {
+    //       network: 'labs.fyre.co',
+    //       siteId: 315833,
+    //       articleId: 'ben-geo-1'
+    //     },
+    //     x: 3,
+    //     y: 1,
+    //     z: 3
+    //   });
 
-/* TODO
-https://github.com/mbostock/d3/blob/3abb00113662463e5c19eb87cd33f6d0ddc23bc0/src/geo/circle.js
+    //   archive.on('data', function (d) {
+    //     var dataEl = renderArchiveData(d)
+    //     appEl.insertBefore(dataEl, appEl.firstChild);
+    //   });
 
-create ploygon centererd on user's point with x and y distance from select menu as multiplier and deliver X: [x-coord, y-coord], Y: [x-coord, y-coord], Z: [x-coord, y-coord] points to create proper geoJSON Polygonas call for:
-
-Livefyre.require([
-  'streamhub-wall#3',
-  'livefyre-geo-collection#1'],
-function (Wall, GeoCollection) {
-  new Wall({
-    el: document.getElement('wall'),
-    collection: GeoCollection({
-      network: 'labs.fyre.co',
-      siteId: 315833,
-      articleId: 'ben-geo-0'
-      geometry: d3.geo.circle(center, radius, precision)
-    })
-  })
-});
-*/
-</script>
-
-<script>
-
-// Livefyre.require([
-//   '../dist/livefyre-geo-collection.js'],
-// function (GeoCollection) {
-//   var appEl = document.getElementById('app');
-//   var archive = GeoCollection.archive({
-//     collection: {
-//       network: 'labs.fyre.co',
-//       siteId: 315833,
-//       articleId: 'ben-geo-1'
-//     },
-//     x: 3,
-//     y: 1,
-//     z: 3
-//   });
-
-//   archive.on('data', function (d) {
-//     var dataEl = renderArchiveData(d)
-//     appEl.insertBefore(dataEl, appEl.firstChild);
-//   });
-
-//   function renderArchiveData(data) {
-//     var el = document.createElement('pre');
-//     var formatted = JSON.stringify(JSON.parse(data), null, 2);
-//     var text = document.createTextNode(formatted);
-//     el.appendChild(text);
-//     return el;
-//   }
-// })
-</script>
-
-<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
-
+    //   function renderArchiveData(data) {
+    //     var el = document.createElement('pre');
+    //     var formatted = JSON.stringify(JSON.parse(data), null, 2);
+    //     var text = document.createTextNode(formatted);
+    //     el.appendChild(text);
+    //     return el;
+    //   }
+    // })
+    </script>
+    <script>
+    document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
+    </script>
 </body>
+
 </html>
