@@ -178,7 +178,7 @@
 
           // add a marker in the given location, attach some popup content to it and open the popup
           L.marker([geoCoords.x, geoCoords.y]).addTo(map)
-          .bindPopup('You are here.')
+          .bindPopup('There you are!')
           .openPopup();
 
           $('#map').show();
@@ -284,34 +284,31 @@
             };
 
             geoJSON = JSON.stringify(geoJSON);
-            console.log(geoJSON);
 
 
-                addGeoJsonToMap(polyJSON);
-                renderMediawall(polyJSON);
+            addGeoJsonToMap(polyJSON);
+            renderMediawall(polyJSON);
 
           processSuccess = function (data) {
               if (data.status === 'ok') {
-                addGeoJsonToMap(polyJSON);
-                renderMediawall(polyJSON);
                 console.log(geoJSON);
               } else if (data.status === 'error') {
-                  alert('There was a problem with your GeoJSON: ' + data.message);
+                  console.log('There was a problem with your GeoJSON: ' + data.message);
               }
           }
 
           processError = function () {
-              alert('There was a problem with your ajax.');
+              console.log('There was a problem with your ajax.');
           }
 
-          // $.ajax({
-          //     url: 'http://geojsonlint.com/validate',
-          //     type: 'POST',
-          //     data: geoJSON,
-          //     dataType: 'json',
-          //     success: processSuccess,
-          //     error: processError
-          // });
+          $.ajax({
+              url: 'http://geojsonlint.com/validate',
+              type: 'POST',
+              data: geoJSON,
+              dataType: 'json',
+              success: processSuccess,
+              error: processError
+          });
 
         };
 
