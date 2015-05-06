@@ -47,7 +47,7 @@
             <form class="form-inline" role="form" id="radius-form">
                 <div class="form-group">
                     <label for="distance">Distance: </label>
-                    <input class="" value="" id="distance" placeholder=".1" />
+                    <input class="" value="" id="distance" placeholder="Min: .1" />
                     <select id="units">
                         <option value="km">km</option>
                         <option value="mi">mi</option>
@@ -166,7 +166,7 @@
     }
 
     function createPoly(distance, unitType, geoCoords) {
-        var handleSubmit, validateDistance, convertDistanceToMeters, angularRadiusFromSurfaceRadius, createPolydata, renderMediawall, validateJSON;
+        var handleSubmit, validateDistance, convertDistanceToMeters, angularRadiusFromSurfaceRadius, createPolydata, renderMediawall, validateGeoJSON;
 
         handleSubmit = function(distance, unitType, geoCoords) {
             var radiusInMeters, validInput, angleDegrees, geometry;
@@ -298,7 +298,8 @@
     $('#radius-form').submit(function(e) {
         e.preventDefault();
         var distance, unitType;
-        distance = parseFloat($('#distance').val(), 10);
+
+        distance = (parseFloat($('#distance').val(), 10)) > 0 ? parseFloat($('#distance').val(), 10) : 0.1;
         unitType = $('#units').val();
         $('.error').text('');
         createPoly(distance, unitType, geoCoords);
