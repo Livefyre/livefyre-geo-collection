@@ -58,7 +58,7 @@ function (GeoCollection) {
   
   function renderArchiveData(data) {
     var el = document.createElement('pre');
-    var formatted = JSON.stringify(JSON.parse(data), null, 2);
+    var formatted = JSON.stringify(data, null, 2);
     var text = document.createTextNode(formatted);
     el.appendChild(text);
     return el;
