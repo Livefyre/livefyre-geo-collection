@@ -1,17 +1,25 @@
 var log = require('debug')('livefyre-geo-collection/feature-contains-state');
+var createFeatureCollection = require('turf-featurecollection');
 
 /**
  * Return whether a GeoJSON Feature contains a Livefyre Content State
  */
 module.exports = function (feature, state) {
-  var stateFeature;
+  var stateFeatureCollection;
   try {
-    stateFeature = stateToFeature(state);
+    stateFeatureCollection = createFeatureCollection([stateToFeature(state)]);
   } catch (err) {
-    log('error converting state to feature '+err);
+    log('error converting state to FeatureCollection '+err);
     return false;
   }
-  return require('turf-inside')(stateFeature, feature);
+  var outerFeatureCollection = (feature.type === 'FeatureCollection')
+    ? feature
+    : createFeatureCollection([feature]);
+  var intersection = require('turf-within')(
+    stateFeatureCollection,
+    outerFeatureCollection
+  );
+  return Boolean(intersection.features.length);
 }
 
 // convert a Livefyre State to a GeoJSON Point Feature

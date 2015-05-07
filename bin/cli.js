@@ -64,6 +64,10 @@ if (opts.stream) {
 function objectsToStdout() {
   var writable = new (require('stream').PassThrough)({ objectMode: true });
 
+  writable.on('pipe', function (src) {
+    src.on('error', handleError);
+  })
+
   writable.on('error', handleError)
   .pipe(require('through2').obj(function (state, encoding, next) {
     // convert to json strings

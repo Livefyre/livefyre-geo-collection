@@ -1,3 +1,4 @@
+var createFeature = require('turf-feature');
 var featureCollectionToStates = require('./feature-collection-to-states');
 var featureContainsState = require('./feature-contains-state');
 var log = require('debug')('livefyre-geo-collection/geo-collection');
@@ -6,9 +7,20 @@ var through = require('through2');
 // create a Transform that accepts Livefyre Content states and only re-emits
 // those that have geocodes and are in the provided geometry
 function geometryStateFilter(geometry) {
+  var feature;
+  switch (geometry.type) {
+    case 'Feature':
+    case 'FeatureCollection':
+      feature = geometry;
+      break;
+    case 'Polygon':
+      feature = createFeature(geometry);
+      break;
+    default:
+      throw new Error("Can't create feature from geometry")
+  }
   return through.obj(function (state, encoding, next){
     try {
-      var feature = require('turf-feature')(geometry);
       var contains = featureContainsState(feature, state);
     } catch(err) {
       return next(err);
@@ -106,6 +118,7 @@ module.exports = function GeoCollection(opts) {
     if (isMore(destination.more)) {
       this.createArchive().pipe(destination.more);
     }
+    this.createUpdater().pipe(destination);
   }
 };
 
