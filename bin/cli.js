@@ -75,10 +75,10 @@ if (opts.archive) {
 
 function createArchiveFromOpts(opts) {
   if (opts.geometry) {
-    var collection = new geoCollection.GeoCollection(
-      opts.collection,
-      opts.geometry
-    );
+    var collection = new geoCollection.GeoCollection({
+      collection: opts.collection,
+      geometry: opts.geometry
+    });
     return collection.createArchive();
   }
   if (opts.tile) {

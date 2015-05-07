@@ -39,17 +39,28 @@
 <script src="https://cdn.livefyre.com/Livefyre.js"></script>
 <script>
 Livefyre.require([
-  '../dist/livefyre-geo-collection.js'],
-function (GeoCollection) {
+  '../dist/livefyre-geo-collection.js',
+  'streamhub-sdk#2'],
+function (GeoCollection, SDK) {
+  function stateToContent(state) {
+    var contents = SDK.StateToContent.transform(state);
+    if ( ! (contents && contents.length)) {
+      return;
+    }
+    var content = contents[0];
+    return content;
+  }
   var appEl = document.getElementById('app');
-  var archive = new GeoCollection.GeoCollection(
-    {
+  var collection = new GeoCollection.GeoCollection({
+    collection: {
       network: 'labs-t402.fyre.co',
       siteId: 303827,
       articleId: 'uat-ben-geo-0'
     },
-    kansasGeometry()
-  ).createArchive();
+    geometry: kansasGeometry(),
+    transformState: stateToContent
+  });
+  var archive = collection.createArchive();
 
   archive.on('data', function (d) {
     var dataEl = renderArchiveData(d)
@@ -58,7 +69,7 @@ function (GeoCollection) {
   
   function renderArchiveData(data) {
     var el = document.createElement('pre');
-    var formatted = JSON.stringify(JSON.parse(data), null, 2);
+    var formatted = JSON.stringify(data, null, 2);
     var text = document.createTextNode(formatted);
     el.appendChild(text);
     return el;
