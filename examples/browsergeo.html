@@ -185,7 +185,11 @@
           }).addTo(map);
 
           // add a marker in the given location, attach some popup content to it and open the popup
-          L.marker([geoCoords.x, geoCoords.y]).addTo(map)
+          L.marker([geoCoords.x, geoCoords.y],{
+            draggable: true
+          }).on('dragend', function (e) {
+            console.dir(e.target._latlng);
+          }).addTo(map)
           .bindPopup('There you are!')
           .openPopup();
 
