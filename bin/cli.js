@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+var Promise = require('es6-promise').polyfill();
 var argv = process.argv.slice(2);
 var fs = require('fs');
 var doc = fs.readFileSync(__dirname+'/doc.txt', 'utf8');
@@ -26,7 +27,6 @@ if (opts['--help']) {
   process.exit(1);
 }
 
-
 var geoCollectionOpts = {
   collection: collectionFromUrn(opts['<collection>']),
   tile: tileFromOpts(opts),
@@ -51,7 +51,20 @@ if (opts.fetch) {
 
 if (opts.archive) {
   createArchiveFromOpts(geoCollectionOpts)
-  .on('error', handleArchiveError)
+  .pipe(objectsToStdout())
+}
+
+if (opts.stream) {
+  createUpdaterFromOpts(geoCollectionOpts)
+  .pipe(objectsToStdout())
+}
+
+// return a writable that will print written objects to stdout, then
+// quit the process when done
+function objectsToStdout() {
+  var writable = new (require('stream').PassThrough)({ objectMode: true });
+
+  writable.on('error', handleError)
   .pipe(require('through2').obj(function (state, encoding, next) {
     // convert to json strings
     try {
@@ -61,16 +74,17 @@ if (opts.archive) {
     }
     next();
   }))
-  .on('error', handleArchiveError)
+  .on('error', handleError)
   .pipe(process.stdout)
-  .on('error', handleArchiveError)
+  .on('error', handleError)
   .on('finish', function () {
     process.exit();
   });
-  function handleArchiveError(err) {
+  function handleError(err) {
     console.error(err);
     process.exit(1);
   }
+  return writable;
 }
 
 function createArchiveFromOpts(opts) {
@@ -86,6 +100,21 @@ function createArchiveFromOpts(opts) {
   }
   throw new Error("Can't create archive from opts");
 }
+
+function createUpdaterFromOpts(opts) {
+  if (opts.geometry) {
+    var collection = new geoCollection.GeoCollection({
+      collection: opts.collection,
+      geometry: opts.geometry
+    });
+    return collection.createUpdater();    
+  }
+  if (opts.tile) {
+    throw new Error("TODO: Dont know how to make updater for tile")
+  }
+  throw new Error("Can't create updater from opts");
+}
+
 
 function collectionFromUrn(urn) {
   var collectionPatterns = {
