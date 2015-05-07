@@ -11,7 +11,10 @@ var fakeCollection = {
 };
 
 test('can create a GeoCollection', function (t) {
-  var collection = new GeoCollection(fakeCollection, mockGeometry);
+  var collection = new GeoCollection({
+    collection: fakeCollection,
+    geometry: mockGeometry
+  });
   t.equal(typeof collection, 'object');
   t.equal(typeof collection.createArchive, 'function');
 

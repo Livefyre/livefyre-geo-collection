@@ -7,7 +7,10 @@ var featureCollectionToStates = require('./feature-collection-to-states');
  * @param collection {object} {network, siteId, articleId}
  * @param geometry {object} a GeoJSON geometry
  */
-module.exports = function GeoCollection(collection, geometry) {
+module.exports = function GeoCollection(opts) {
+  var collection = opts.collection;
+  var geometry = opts.geometry;
+  var transformState = opts.transformState;
   /**
    * Create an archive stream of historical Content in the Geometry
    */
@@ -19,6 +22,26 @@ module.exports = function GeoCollection(collection, geometry) {
       .pipe(spread())
       ;
 
+    // if a transformState function is passed, map it over every
+    // state
+    if (transformState) {
+      states = states
+        .on('error',handleError)
+        .pipe(through.obj(function (state, encoding, next) {
+          var transformed;
+          try {
+            transformed = transformState(state);
+          } catch (err) {
+            return next(err);
+          }
+          // if it returns a falsy, dont push it along
+          if (transformed) {
+            this.push(transformed);
+          }
+          next();
+        }))
+    }
+
     function handleError(err) {
       console.error('error in geo-collection archive', err);
       states.emit('error', err);
@@ -29,10 +52,24 @@ module.exports = function GeoCollection(collection, geometry) {
   /**
    * Create an updater stream of new items added to the Geometry
    */
-  this.updater = function () {
+  this.createUpdater = function () {
     throw new Error('#TODO');
   };
+
+  /**
+   * Implement Collection#pipe, which pipes into a destination and its .more
+   */
+  this.pipe = function (destination) {
+    var archive;
+    if (isMore(destination.more)) {
+      this.createArchive().pipe(destination.more);
+    }
+  }
 };
+
+function isMore(more) {
+  return more && typeof more.write === 'function';
+}
 
 /**
  * Create a Transform stream that transforms JSON (str) FeatureCollections

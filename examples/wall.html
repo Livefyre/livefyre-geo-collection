@@ -1,16 +1,76 @@
 <!doctype html>
 
 <main id="app"></main>
+<script id="kansas-geometry" type="text/json">
+{
+  "type": "Polygon",
+  "coordinates": [
+    [
+      [
+        -95.745849609375,
+        39.189690821096804
+      ],
+      [
+        -96.00677490234375,
+        38.90813299596705
+      ],
+      [
+        -95.50140380859374,
+        38.84826438869913
+      ],
+      [
+        -94.9932861328125,
+        38.94232097947902
+      ],
+      [
+        -95.02349853515625,
+        39.07464374293249
+      ],
+      [
+        -95.745849609375,
+        39.189690821096804
+      ]
+    ]
+  ]
+}
+</script>
 
 <script src="https://cdn.livefyre.com/Livefyre.js"></script>
 <script>
 Livefyre.require([
   'streamhub-wall#3',
+  'streamhub-sdk#2',
   '../dist/livefyre-geo-collection.js'],
-function (Wall, GeoCollection) {
-  console.log('GeoCollection is', GeoCollection);
+function (Wall, SDK, GeoCollection) {
+  var appEl = document.getElementById('app');
+  var collection = new GeoCollection.GeoCollection({
+    collection: {
+      network: 'labs-t402.fyre.co',
+      siteId: 303827,
+      articleId: 'uat-ben-geo-0'
+    },
+    geometry: kansasGeometry(),
+    transformState: stateToContent
+  });
+
+  debugger;
   var app = new Wall({
-    el: document.getElementById('app')
+    el: document.getElementById('app'),
+    collection: collection
   })
+
+  function stateToContent(state) {
+    var contents = SDK.StateToContent.transform(state);
+    if ( ! (contents && contents.length)) {
+      return;
+    }
+    var content = contents[0];
+    return content;
+  }
+
+  function kansasGeometry() {
+    var json = document.getElementById('kansas-geometry').innerText;
+    return JSON.parse(json)
+  }
 })
 </script>
