@@ -5,11 +5,18 @@
     <link rel="stylesheet" type="text/css" href="http://s.codepen.io/assets/reset/normalize.css" />
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
     <style>
+    #geo {
+      text-align: center;
+      margin: 0 auto;
+    }
     ul {
         list-style-type: none;
         font-size: 18px;
     }
-
+    #id {
+      margin: 0 auto;
+      width: 1024px;
+    }
     #map {
       height: 300px;
     }
@@ -20,6 +27,7 @@
         height: 16px;
         display: block;
         visibility: hidden;
+        margin: 10px auto;
     }
 
     .visible {
@@ -35,8 +43,8 @@
 </head>
 
 <body>
-    <h1>livefyre-geo-collection/examples/browsergeo.html</h1>
     <div id="geo">
+      <h1>livefyre-geo-collection/examples/browsergeo.html</h1>
       <form class="form-inline" role="form" id="zoom-form">
             <div class="form-group">
                 <label for="zoom">Zoom: </label>
