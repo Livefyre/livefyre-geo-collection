@@ -327,32 +327,33 @@
         renderMediawall = function(geometry) {
 
           Livefyre.require([
+                  'streamhub-wall#3',
+                  'streamhub-sdk#2',
                   '../dist/livefyre-geo-collection.js'
               ],
-              function(GeoCollection) {
+              function(Wall, SDK, GeoCollection) {
                   var appEl = document.getElementById('app');
                   var geoCollection = new(GeoCollection.GeoCollection)({
+                      collection: {
                           network: 'labs-t402.fyre.co',
                           siteId: 303827,
                           articleId: 'uat-ben-geo-0'
                       },
-                      geometry
-                  );
-
-                  var archive = geoCollection.createArchive();
-
-                  archive.on('data', function(d) {
-                      var dataEl = renderArchiveData(d);
-                      appEl.insertBefore(dataEl, appEl.firstChild);
+                      geometry: geometry,
+                      transformState: function stateToContent(state) {
+                        var contents = SDK.StateToContent.transform(state);
+                        if ( ! (contents && contents.length)) {
+                          return;
+                        }
+                        var content = contents[0];
+                        return content;
+                      }
                   });
 
-                  function renderArchiveData(data) {
-                      var el = document.createElement('pre');
-                      var formatted = JSON.stringify(JSON.parse(data), null, 2);
-                      var text = document.createTextNode(formatted);
-                      el.appendChild(text);
-                      return el;
-                  }
+                  new Wall({
+                    el: appEl,
+                    collection: geoCollection
+                  })
               });
 
         };
