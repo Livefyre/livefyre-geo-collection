@@ -1,7 +1,6 @@
 'use strict';
 var base64 = require('./base64');
 var livefyreUrl = require('./livefyre-url');
-var querystring = require('querystring');
 
 var initUrlTemplate = '{protocol}//{host}/bs3/v3.1/{network}/{siteId}/{b64urlArticleId}/init';
 /**
