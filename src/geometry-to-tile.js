@@ -3,9 +3,6 @@
  * @param geometry {object} A GeoJSON geometry
  */
 module.exports = function geometryToTile(geometry) {
-  if ( ! geometry) {
-    debugger;
-  }
   var extent = require('turf-extent')(geometry);
   var tilebelt = require('tilebelt');
   var tile = tileCoveringExtent(extent);

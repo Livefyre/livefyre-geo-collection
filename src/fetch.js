@@ -1,8 +1,3 @@
-var geoUrl = require('./geo-url');
-
-var Promise = require('es6-promise').polyfill();
-var fetch = require('isomorphic-fetch');
-
 var requestGeo = require('./request');
 
 /**

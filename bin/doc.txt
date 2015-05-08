@@ -2,6 +2,7 @@ Usage:
   livefyre-geo-collection <collection> (-t <tile> | -g <geometry>) url
   livefyre-geo-collection <collection> (-t <tile> | -g <geometry>) fetch
   livefyre-geo-collection <collection> (-t <tile> | -g <geometry>) archive
+  livefyre-geo-collection <collection> (-t <tile> | -g <geometry>) stream
   livefyre-geo-collection -v | --version
   livefyre-geo-collection -h | --help
 
@@ -9,6 +10,7 @@ Commands:
   url      print the API URL of the GeoJSON
   fetch    fetch one page of GeoJSON and return the response to stdout
   archive  fetch all the GeoJSON and stream the response to stdout.
+  stream   stream real-time updates to stdout
   
 Arguments:
   <collection>  URN of Livefyre Collection

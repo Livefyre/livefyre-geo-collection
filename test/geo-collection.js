@@ -1,6 +1,7 @@
 var test = require('blue-tape');
 // var geoCollectionMixin = require('../').mixin;
 var GeoCollection = require('../').GeoCollection;
+var Promise = require('es6-promise').Promise;
 
 var mockGeometry = fixture('ks.geojson');
 
@@ -13,7 +14,8 @@ var fakeCollection = {
 test('can create a GeoCollection', function (t) {
   var collection = new GeoCollection({
     collection: fakeCollection,
-    geometry: mockGeometry
+    geometry: mockGeometry,
+    fetch: fakeFetch
   });
   t.equal(typeof collection, 'object');
   t.equal(typeof collection.createArchive, 'function');
@@ -25,17 +27,22 @@ test('can create a GeoCollection', function (t) {
   t.equal(typeof archive.read, 'function');
   t.equal(typeof archive.pipe, 'function');
 
-  // #TODO createUpdater() returns a stream.Readable
-  // var updater = collection.createUpdater();
-  // t.equal(typeof updater, 'object');
-  // t.equal(typeof updater.on, 'function');
-  // t.equal(typeof updater.read, 'function');
-  // t.equal(typeof updater.pipe, 'function');
-
+  // createUpdater() returns a stream.Readable
+  var updater = collection.createUpdater();
+  t.equal(typeof updater, 'object');
+  t.equal(typeof updater.on, 'function');
+  t.equal(typeof updater.read, 'function');
+  t.equal(typeof updater.pipe, 'function');
+  updater.destroy();
+  
   t.end();
 })
 
 function fixture(path) {
   var json = require('fs').readFileSync(__dirname+'/fixtures/'+path, 'utf8');
   return JSON.parse(json);
+}
+
+function fakeFetch() {
+  return Promise.resolve({})
 }
