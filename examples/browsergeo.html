@@ -441,6 +441,37 @@
             };
 
             geoJSON = JSON.stringify(geoJSON);
+        };
+
+        addGeoJsonToMap = function (polyJSON, map) {
+          L.geoJson(polyJSON).addTo(window.map);
+        };
+
+        renderMediawall = function(geometry) {
+
+          Livefyre.require([
+                  'streamhub-wall#3',
+                  'streamhub-sdk#2',
+                  '../dist/livefyre-geo-collection.lf.js'
+              ],
+              function(Wall, SDK, GeoCollection) {
+                  var appEl = document.getElementById('app');
+                  var geoCollection = new(GeoCollection.GeoCollection)({
+                      collection: {
+                          network: 'labs-t402.fyre.co',
+                          siteId: 303827,
+                          articleId: 'uat-ben-geo-0'
+                      },
+                      geometry: geometry,
+                      transformState: function stateToContent(state) {
+                        var contents = SDK.StateToContent.transform(state);
+                        if ( ! (contents && contents.length)) {
+                          return;
+                        }
+                        var content = contents[0];
+                        return content;
+                      }
+                  });
 
             processSuccess = function(data) {
                 if (data.status === 'ok') {} else if (data.status === 'error') {

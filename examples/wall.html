@@ -1,4 +1,5 @@
 <!doctype html>
+<script src="//cdn.polyfill.io/v1/polyfill.js?features=Promise"></script>
 
 <main id="app"></main>
 <script id="kansas-geometry" type="text/json">
@@ -40,7 +41,7 @@
 Livefyre.require([
   'streamhub-wall#3',
   'streamhub-sdk#2',
-  '../dist/livefyre-geo-collection.js'],
+  '../dist/livefyre-geo-collection.lf.js'],
 function (Wall, SDK, GeoCollection) {
   var appEl = document.getElementById('app');
   var collection = new GeoCollection.GeoCollection({
@@ -68,7 +69,7 @@ function (Wall, SDK, GeoCollection) {
   }
 
   function kansasGeometry() {
-    var json = document.getElementById('kansas-geometry').innerText;
+    var json = document.getElementById('kansas-geometry').innerHTML;
     return JSON.parse(json)
   }
 })
