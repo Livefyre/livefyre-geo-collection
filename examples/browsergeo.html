@@ -208,8 +208,8 @@
               layer.bindPopup('This is where your content comes from');
           }
       });
-      map.fitBounds(fence.getBounds());
       map.addLayer(fence);
+      map.fitBounds(fence.getBounds());
     }
 
     function removeFence(fence) {
