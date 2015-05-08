@@ -8,7 +8,7 @@ module.exports = function createCollectionUpdater(opts) {
   var collection = Object.create(opts.collection);
   var event = opts.event;
   var updater = new Readable({ objectMode: true });
-  var fetch = opts.fetch || require('isomorphic-fetch');
+  var fetch = opts.fetch || require('./safe-fetch');
   updater._read = function (size) {
     if ( ! (typeof event === 'number' && collection.id)) {
       // init to get event
