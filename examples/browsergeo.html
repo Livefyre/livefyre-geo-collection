@@ -154,7 +154,7 @@
         marker.setPopupContent(text);
         markerMoved = true;
         if (fenceState) {
-            removeFence(fence, map);
+            removeFence(fence);
         }
         geoUpdateUI(geoCoords);
         createPoly(geoCoords, addFence, renderMediawall);
@@ -357,7 +357,7 @@
         var radiusInMeters, validInput, angleDegrees;
 
         distance = parseFloat($('#distance').val(), 10);
-        distance = (distance > 0) ? distance : parseFloat('1');
+        distance = (distance > 0) ? distance : parseFloat('10');
         unitType = $('#units').val();
 
         radiusInMeters = convertDistanceToMeters(distance, unitType);
