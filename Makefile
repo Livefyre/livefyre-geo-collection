@@ -55,24 +55,42 @@ watch:
 	npm run watch
 
 # browserify and build into dist
-dist: build
+dist: build $(SRC_FILES)
 	mkdir -p dist
 	make dist/livefyre-geo-collection.js
 	make dist/livefyre-geo-collection.min.js
+	make dist/livefyre-geo-collection.min.js.gz
+	make dist/livefyre-geo-collection.lf.js
+	make dist/livefyre-geo-collection.min.lf.js
+	make dist/livefyre-geo-collection.min.lf.js.gz
+
 
 # dev JS
 dist/livefyre-geo-collection.js: $(SRC_FILES)
 	mkdir -p dist
-	cat tools/wrap-start.frag > dist/livefyre-geo-collection.js
-	./node_modules/.bin/browserify -r ./index.js:livefyre-geo-collection >> dist/livefyre-geo-collection.js
-	cat tools/wrap-end.frag >> dist/livefyre-geo-collection.js	
+	./node_modules/.bin/browserify -s Livefyre.GeoCollection -r ./index.js:livefyre-geo-collection >> dist/livefyre-geo-collection.js
 
-dist/livefyre-geo-collection.lf.js:
-	# TODO
+dist/livefyre-geo-collection.lf.js: $(SRC_FILES)
+	mkdir -p dist
+	cat tools/wrap-start.frag > dist/livefyre-geo-collection.lf.js
+	./node_modules/.bin/browserify -r ./index.js:livefyre-geo-collection >> dist/livefyre-geo-collection.lf.js
+	cat tools/wrap-end.frag >> dist/livefyre-geo-collection.lf.js	
 
 # uglified JS
 dist/livefyre-geo-collection.min.js: dist/livefyre-geo-collection.js
 	cat dist/livefyre-geo-collection.js | ./node_modules/.bin/uglifyjs > dist/livefyre-geo-collection.min.js
+
+
+# uglified JS
+dist/livefyre-geo-collection.min.lf.js: dist/livefyre-geo-collection.js
+	cat dist/livefyre-geo-collection.lf.js | ./node_modules/.bin/uglifyjs > dist/livefyre-geo-collection.min.lf.js
+
+
+dist/livefyre-geo-collection.min.js.gz: dist/livefyre-geo-collection.min.js
+	gzip -9 < dist/livefyre-geo-collection.min.js > dist/livefyre-geo-collection.min.js.gz
+
+dist/livefyre-geo-collection.min.lf.js.gz: dist/livefyre-geo-collection.min.lf.js
+	gzip -9 < dist/livefyre-geo-collection.min.lf.js > dist/livefyre-geo-collection.min.lf.js.gz
 
 clean:
 	rm -rf dist

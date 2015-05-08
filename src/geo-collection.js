@@ -1,5 +1,38 @@
-var through = require('through2');
+var createFeature = require('turf-feature');
 var featureCollectionToStates = require('./feature-collection-to-states');
+var featureContainsState = require('./feature-contains-state');
+var log = require('debug')('livefyre-geo-collection/geo-collection');
+var through = require('through2');
+
+// create a Transform that accepts Livefyre Content states and only re-emits
+// those that have geocodes and are in the provided geometry
+function geometryStateFilter(geometry) {
+  var feature;
+  switch (geometry.type) {
+    case 'Feature':
+    case 'FeatureCollection':
+      feature = geometry;
+      break;
+    case 'Polygon':
+      feature = createFeature(geometry);
+      break;
+    default:
+      throw new Error("Can't create feature from geometry")
+  }
+  return through.obj(function (state, encoding, next){
+    try {
+      var contains = featureContainsState(feature, state);
+    } catch(err) {
+      return next(err);
+    }
+    if (contains) {
+      this.push(state);
+    } else {
+      log('feature does not contain state, skipping')
+    }
+    next();
+  });
+}
 
 /**
  * Represents the subset of items in a Livefyre Collection that are
@@ -11,15 +44,24 @@ module.exports = function GeoCollection(opts) {
   var collection = opts.collection;
   var geometry = opts.geometry;
   var transformState = opts.transformState;
+  var fetch = opts.fetch;
+
   /**
    * Create an archive stream of historical Content in the Geometry
    */
   this.createArchive = function () {
-    var states = require('./geometry-archive')(collection, geometry)
+    var tile = require('./geometry-to-tile')(geometry);
+    var states = require('./tile-archive')({
+      collection: collection,
+      tile: tile,
+      fetch: fetch
+      })
       .on('error', handleError)
       .pipe(transformFeatureCollectionsToStates())
       .on('error', handleError)
       .pipe(spread())
+      .on('error', handleError)
+      .pipe(geometryStateFilter(geometry))
       ;
 
     // if a transformState function is passed, map it over every
@@ -27,23 +69,11 @@ module.exports = function GeoCollection(opts) {
     if (transformState) {
       states = states
         .on('error',handleError)
-        .pipe(through.obj(function (state, encoding, next) {
-          var transformed;
-          try {
-            transformed = transformState(state);
-          } catch (err) {
-            return next(err);
-          }
-          // if it returns a falsy, dont push it along
-          if (transformed) {
-            this.push(transformed);
-          }
-          next();
-        }))
+        .pipe(stateTransformer(transformState));
     }
 
     function handleError(err) {
-      console.error('error in geo-collection archive', err);
+      log('error in geo-collection archive', err);
       states.emit('error', err);
     }
 
@@ -53,7 +83,31 @@ module.exports = function GeoCollection(opts) {
    * Create an updater stream of new items added to the Geometry
    */
   this.createUpdater = function () {
-    throw new Error('#TODO');
+    var states = require('./collection-updater')({
+      collection: collection,
+      fetch: fetch
+    })
+      .on('error', handleError)
+      .pipe(transformStreamBodyToStates())
+      .on('error', handleError)
+      .pipe(spread())
+      .on('error', handleError)
+      .pipe(geometryStateFilter(geometry))
+      ;
+
+    // if a transformState function is passed, map it over every
+    // state
+    if (transformState) {
+      states = states
+        .on('error',handleError)
+        .pipe(stateTransformer(transformState));
+    }
+
+    function handleError(err) {
+      log('error in geo-collection updater', err);
+      states.emit('error', err);
+    }
+    return states;
   };
 
   /**
@@ -64,8 +118,25 @@ module.exports = function GeoCollection(opts) {
     if (isMore(destination.more)) {
       this.createArchive().pipe(destination.more);
     }
+    this.createUpdater().pipe(destination);
   }
 };
+
+function stateTransformer(transformState) {
+  return through.obj(function (state, encoding, next) {
+    var transformed;
+    try {
+      transformed = transformState(state);
+    } catch (err) {
+      return next(err);
+    }
+    // if it returns a falsy, dont push it along
+    if (transformed) {
+      this.push(transformed);
+    }
+    next();
+  })
+}
 
 function isMore(more) {
   return more && typeof more.write === 'function';
@@ -89,6 +160,21 @@ function transformFeatureCollectionsToStates() {
     this.push(states);
     done();
   })
+}
+
+// create a Transform that accepts stream response bodies and re-emits
+// arrays of Livefyre States
+function transformStreamBodyToStates() {
+  return through.obj(function (streamBody, encoding, next) {
+    var states;
+    try {
+      states = require('./stream-body-to-states')(streamBody);
+    } catch(err) {
+      return next(err);
+    }
+    this.push(states);
+    next();
+  });
 }
 
 /**
