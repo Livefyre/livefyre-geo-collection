@@ -9,6 +9,9 @@
       text-align: center;
       margin: 0 auto;
     }
+    .quick {
+      margin: 10px 0 0 0;
+    }
     ul {
         list-style-type: none;
         font-size: 18px;
@@ -39,6 +42,9 @@
     #js-distance-wrapper {
         display: none;
     }
+    .leaflet-container {
+      background: url('http://www.broadwaybalancesamerica.com/images/ajax-loader.gif') center center no-repeat #fff;
+    }
     .leaflet-popup-content {
       text-align: center;
     }
@@ -56,7 +62,7 @@
 
 <body>
     <div id="geo">
-      <h1>livefyre-geo-collection/examples/browsergeo.html</h1>
+      <h1>Geo Filtering a Livefyre Collection</h1>
       <div id="map"></div>
       <!--
       <form class="form-inline" role="form" id="zoom-form">
@@ -102,11 +108,11 @@
             <h2>Enter Radius From Marker</h2>
             <form class="form-inline" role="form" id="radius-form">
                 <div class="form-group">
-                    <label for="distance">Distance: </label>
-                    <input class="" value="" id="distance" placeholder="Min: .1" />
+                    <label for="distance"></label>
+                    <input class="" value="" id="distance" placeholder="Radial Min: 0.1" />
                     <select id="units">
-                        <option value="km">km</option>
                         <option value="mi">mi</option>
+                        <option value="km">km</option>
                     </select>
                     <button type="submit" class="btn" id="submit-radius">
                         Create Geo Fenced Media Wall
@@ -217,7 +223,7 @@
             });
 
             marker.addTo(map);
-            marker.bindPopup('This is where you are.');
+            marker.bindPopup('Found you!');
             marker.openPopup();
 
             marker.on('dragend', function (e) {
