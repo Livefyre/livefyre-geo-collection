@@ -161,7 +161,7 @@
     }
 
     function mapInit(geoCoords) {
-        var center;
+
         map = window.map = L.map('map').locate({
             setView: true,
             maxZoom: 15,
@@ -187,8 +187,8 @@
 
         map.on('zoomend', function(e) {
             var currentZ = map.getZoom();
-            $('#js-your-zoom > span').text(currentZ);
             geoCoords.z = currentZ;
+            $('#js-your-zoom > span').text(currentZ);
         });
 
         map.on('click', function(e) {
@@ -357,7 +357,7 @@
         var radiusInMeters, validInput, angleDegrees;
 
         distance = parseFloat($('#distance').val(), 10);
-        distance = (distance > 0) ? distance : parseFloat('10');
+        distance = (distance > 0) ? distance : parseFloat('10', 10);
         unitType = $('#units').val();
 
         radiusInMeters = convertDistanceToMeters(distance, unitType);
