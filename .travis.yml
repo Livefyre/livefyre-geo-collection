@@ -1,13 +1,10 @@
 language: node_js
-
 script: make test
-
 node_js:
 - '0.12'
 - '0.11'
 - '0.10'
 - iojs
-
 matrix:
   include:
   - node_js: '0.12'
@@ -22,8 +19,7 @@ matrix:
     env: BROWSER_NAME=ie BROWSER_VERSION=latest
   - node_js: '0.12'
     env: BROWSER_NAME=ie BROWSER_VERSION=9
-
 env:
   global:
-  - secure: SgWOu+EI914i2fUHGLfPuuwy1X2DFUg6Q91UZuAa/QteoCGuUan07Zhj/V6KUzfyzBCzepoYDKZjduK7soATQ6QX+HZ/T/9OYx7dy/mmFFt3G90h9VTioSMy+ef+j2XHqOq6ZKe+356KblglZeSW/2uAV1bSbfsZnBqrPZf5pCI=
-  - secure: cg1ITdS3Mus3XEoXd0i8JLrc2An18Y1l8dj54ALk7859oq2KzRUEhH3Wgd+bPDZyGQ1Yp8fcuODtTXx0cWAJHKjsvc/j8IEH2zuA9flMIk9Eo80JEUgzlbEl/E5vl9mzXCZio4WHY5OJgCr3681LAIu38x/l1B00MBLvOIuKzDU=
+  - secure: KorHQHE3+450BFHlb4W0GkUL1PREOvuDpieAt2ZXap5Qeo2Xcjuqd8y6zV0oQk9FUHbnPNAwKM6oOy7hsO5i7vlFAgm0+8W03tAjCKinP13pb6jlWuAQZSfIYB/hVXluPc/QsJUQgkP1so4tZLRfKKDnBfsHYkin8zbPuPQAE5I=
+  - secure: GHF2ChubOIoQ1MHYy2iR4FrKKThIao1vR3l6mtHMhIBJaHSpyj2aE+MfjuwQFGTL5Iwi2JPAHoiBAv79Cil2i+pT+P17CtSBgsF2Vi5NW/gavTInPoR1wFRbiGx9htnU21DjuvywsHTeFuybOIsQOidstbCOTDjYlhmL23nn6J0=
