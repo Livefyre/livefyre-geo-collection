@@ -13,7 +13,7 @@ module.exports = function (opts) {
     host: livefyreUrl.apiHostForNetwork(collection.network, 'stream1'),
     protocol: opts.protocol || 'https:',
     collectionId: collection.id,
-    event: opts.event,
+    event: opts.event
   });
   return url;
 }
