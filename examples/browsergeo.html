@@ -133,7 +133,10 @@
     'use strict';
 
     var geoCoords = {};
-    var fence;
+    var fenceState = false;
+    var fence = null;
+    var wallState = false;
+
      var geoUpdateUI = function(data) {
       $('#js-your-lat > span').text(data.x);
       $('#js-your-lon > span').text(data.y);
@@ -270,19 +273,40 @@
 
     }
 
-  function renderMediawall(geometry) {
-          //wall.configure({})
-   var bensCollection = {
-      network: 'labs-t402.fyre.co',
-      siteId: 303827,
-      articleId: 'uat-ben-geo-0'
-    };
+  function updateWall(geometry) {
+    //wall.configure({})
+    console.log('update called')
+      wall.configure({
+          collection: {
+            network: 'labs-t402.fyre.co',
+            siteId: 303827,
+            articleId: 'uat-ben-geo-0'
+          },
+          geometry: geometry,
+          transformState: function stateToContent(state) {
+            var contents = SDK.StateToContent.transform(state);
+            if ( ! (contents && contents.length)) {
+              return;
+            }
+            var content = contents[0];
+            return content;
+          }
+      });
+  }
 
+  function renderMediawall(geometry) {
+    wallState = true;
     // bruces collection http://admin.client-demo-accounts.fyre.co/v3/site/372680/collections/122538518
     var weatherCollection = {
       network: 'client-demo-accounts.fyre.co',
       siteId: 372680,
       articleId: 'custom-1426705037726'
+    };
+
+    var bensCollection = {
+      network: 'labs-t402.fyre.co',
+      siteId: 303827,
+      articleId: 'uat-ben-geo-0'
     };
 
     Livefyre.require([
@@ -305,7 +329,7 @@
                 }
             });
 
-            new Wall({
+            var wall = window.wall = new Wall({
               el: appEl,
               collection: geoCollection
             })
@@ -315,7 +339,7 @@
 
 
   function addGeoJsonToMap (geometry, map, renderMediawall) {
-
+    fenceState = true;
     fence = L.geoJson(geometry, {
       style: function (feature) {
           return {color: 'red'};
@@ -327,7 +351,12 @@
     //debugger;
     map.fitBounds(fence.getBounds());
     map.addLayer(fence);
-    renderMediawall(geometry);
+
+    if (!wallState) {
+      renderMediawall(geometry);
+    } else {
+      updateWall(geometry);
+    }
   }
 
   function removeFence (fence, map) {
@@ -452,6 +481,11 @@
         distance =  (distance > 0) ? distance : parseFloat('.1');
         unitType = $('#units').val();
         $('.error').text('');
+
+        if (fenceState) {
+          removeFence(fence, map);
+        }
+
         createPoly(distance, unitType, geoCoords, addGeoJsonToMap, map);
     });
 
