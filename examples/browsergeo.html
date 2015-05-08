@@ -122,7 +122,7 @@
     var markerMoved = false;
     var marker = null;
     var map = null;
-
+    // bruces collection http://admin.client-demo-accounts.fyre.co/v3/site/372680/collections/122538518
     var weatherCollection = {
         network: 'client-demo-accounts.fyre.co',
         siteId: 372680,
@@ -315,7 +315,7 @@
 
     function renderMediawall(geometry) {
         wallState = true;
-        // bruces collection http://admin.client-demo-accounts.fyre.co/v3/site/372680/collections/122538518
+
         Livefyre.require([
                 'streamhub-wall#3',
                 'streamhub-sdk#2',
@@ -324,7 +324,7 @@
             function(Wall, SDK, GeoCollection) {
                 var appEl = document.getElementById('app');
                 var geoCollection = new(GeoCollection.GeoCollection)({
-                    collection: weatherCollection,
+                    collection: bensCollection,
                     geometry: geometry,
                     transformState: function stateToContent(state) {
                         var contents = SDK.StateToContent.transform(state);
