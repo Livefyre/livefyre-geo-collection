@@ -166,11 +166,13 @@
             setView: true,
             maxZoom: 15,
             enableHighAccuracy: true,
-            maximumAge: 59999.9
+            maximumAge: 59999.9,
+            worldCopyJump: true
         });
 
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-            attribution: 'Livefyre Geo Maps'
+            attribution: 'Livefyre Geo Maps',
+            detectRetina: true
         }).addTo(map);
 
         map.on('load', function(e) {
@@ -364,8 +366,7 @@
         validInput = validateDistance(radiusInMeters);
 
         if (!validInput) {
-            $('.error').text('The circumfrence of the earth isn\'t even that big! Try something smaller.');
-            return;
+            $('.error').text('That\'s pretty big! Try something smaller.');
         } else {
             angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
             geometry = createPolydata(angleDegrees, geoCoords);
@@ -376,7 +377,7 @@
         }
 
         function validateDistance(r) {
-            var MAX = 40075000;
+            var MAX = 3220290;
             var MIN = parseFloat('.1');
             return (r < MAX && r > MIN) ? true : false;
         }
