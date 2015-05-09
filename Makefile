@@ -61,8 +61,8 @@ dist: build $(SRC_FILES)
 	make dist/livefyre-geo-collection.min.js
 	make dist/livefyre-geo-collection.min.js.gz
 	make dist/livefyre-geo-collection.lf.js
-	make dist/livefyre-geo-collection.min.lf.js
-	make dist/livefyre-geo-collection.min.lf.js.gz
+	make dist/livefyre-geo-collection.lf.min.js
+	make dist/livefyre-geo-collection.lf.min.js.gz
 
 
 # dev JS
@@ -82,15 +82,15 @@ dist/livefyre-geo-collection.min.js: dist/livefyre-geo-collection.js
 
 
 # uglified JS
-dist/livefyre-geo-collection.min.lf.js: dist/livefyre-geo-collection.js
-	cat dist/livefyre-geo-collection.lf.js | ./node_modules/.bin/uglifyjs > dist/livefyre-geo-collection.min.lf.js
+dist/livefyre-geo-collection.lf.min.js: dist/livefyre-geo-collection.js
+	cat dist/livefyre-geo-collection.lf.js | ./node_modules/.bin/uglifyjs > dist/livefyre-geo-collection.lf.min.js
 
 
 dist/livefyre-geo-collection.min.js.gz: dist/livefyre-geo-collection.min.js
 	gzip -9 < dist/livefyre-geo-collection.min.js > dist/livefyre-geo-collection.min.js.gz
 
-dist/livefyre-geo-collection.min.lf.js.gz: dist/livefyre-geo-collection.min.lf.js
-	gzip -9 < dist/livefyre-geo-collection.min.lf.js > dist/livefyre-geo-collection.min.lf.js.gz
+dist/livefyre-geo-collection.lf.min.js.gz: dist/livefyre-geo-collection.lf.min.js
+	gzip -9 < dist/livefyre-geo-collection.lf.min.js > dist/livefyre-geo-collection.lf.min.js.gz
 
 clean:
 	rm -rf dist
