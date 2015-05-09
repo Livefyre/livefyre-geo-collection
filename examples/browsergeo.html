@@ -371,6 +371,7 @@
             angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
             geometry = createPolydata(angleDegrees, geoCoords);
             addFence(geometry);
+            geoCoords.z = map.getZoom();
             renderMediawall(geometry);
             validateGeoJSON(geometry);
             $('#distance').val(distance);
@@ -456,8 +457,8 @@
     $('body').on('click', '.quick', function(e) {
         var $el = $(e.target);
         var text = $el.data('city');
-        geoCoords.x = $el.data('lat');
-        geoCoords.y = $el.data('lng');
+        geoCoords.x = parseFloat($el.data('lat'));
+        geoCoords.y = parseFloat($el.data('lng'));
         mapSetView(geoCoords, text, addFence, renderMediawall);
     });
     $('#radius-form').submit(function(e) {
