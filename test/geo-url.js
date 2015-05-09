@@ -1,5 +1,5 @@
 var test = require('blue-tape');
-var geoUrl = require('../').url;
+var geoUrl = require('../src/geo-url');
 var cases = [{
   message: 'with minimal args',
   opts: {
