@@ -34,11 +34,11 @@ var geoCollectionOpts = {
 }
 
 if (opts.url) {
-  process.stdout.write(geoCollection.url(geoCollectionOpts))
+  process.stdout.write(require('../src/geo-url')(geoCollectionOpts))
 }
 
 if (opts.fetch) {
-  geoCollection.fetch(geoCollectionOpts)
+  require('../src/fetch')(geoCollectionOpts)
   .then(function (json) {
     console.log(JSON.stringify(json, null, 2));
     process.exit();

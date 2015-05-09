@@ -22,11 +22,19 @@ Options:
   -v, --version   show version and exit
 
 Examples:
+  # Get all historic content from a collection + geometry
+  ⚡ livefyre-geo-collection urn:livefyre:client-demo-accounts.fyre.co:site=372680:article=custom-1426705037726:collection -g "$(cat test/fixtures/usa.geojson)" archive
+
+  # Get real-time updates from a collection + geometry
+  ⚡ livefyre-geo-collection urn:livefyre:client-demo-accounts.fyre.co:site=372680:article=custom-1426705037726:collection -g "$(cat test/fixtures/usa.geojson)" stream
+
+  # Get URL for provided tile of Collection
   ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-1:collection \
     -t 3,3,1 \
     url
   https://labs.bootstrap.fyre.co/bs3/v3.1/labs.fyre.co/315833/YmVuLWdlby0w/geojson/3/7/1.json
 
+  # Fetch one page of content fromthe tile
   ⚡ livefyre-geo-collection urn:livefyre:labs.fyre.co:site=315833:article=ben-geo-1:collection \
     -t 3,3,1 \
     fetch    
