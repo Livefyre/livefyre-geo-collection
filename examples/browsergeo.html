@@ -242,7 +242,7 @@
             geoCoords.x = e.target._latlng.lat;
             geoCoords.y = e.target._latlng.lng;
             geoUpdateUI(geoCoords);
-            removeFence(fence, map);
+            removeFence(fence);
             markerMoved = true;
             if (wallState) {
               createPoly(geoCoords, addFence, renderMediawall);
