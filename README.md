@@ -4,6 +4,21 @@
 
 A library to access Livefyre Collections through its Map Tile API. This lets you fetch historic content or real-time updates of social content for any GeoJSON Geometry.
 
+## Example Use Cases
+
+* Show me all the social Content that is geotagged at a warriors game at Oracle Arena
+* Show me all the the social Content originating from within a 1 mile radius of me
+
+## How does it work?
+
+* You tell `livefyre-geo-collection` about your desired geofence by providing a GeoJSON Geometry. You can use [geojson.io](http://geojson.io/) to draw these.
+  - Or use the fixtures in [test/fixtures](./test/fixtures/)
+* The library figures out the bounding box of that geometry
+* The library figures out which map tile x,y,z covers that bounding box
+* The library requests Livefyre APIs to get either historic or real-time Content from that tile
+* If the API returns Content that is in the tile, but not in the provided geometry, it throws it onthe ground
+* Content in the provided geometry is emitted from a [Readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable)
+
 ## Usage
 
 ### as browser library via Livefyre.js
