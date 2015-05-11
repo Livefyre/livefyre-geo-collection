@@ -15,7 +15,7 @@ A library to access Livefyre Collections through its Map Tile API. This lets you
   - Or use the fixtures in [test/fixtures](./test/fixtures/)
 * The library figures out the bounding box of that geometry
 * The library figures out which map tile x,y,z covers that bounding box
-* The library requests Livefyre APIs to get either historic or real-time Content from that tile
+* The library requests [Livefyre Geo Tile API](http://docs.livefyregeotileapi.apiary.io/#reference/undefined/tile-api/get-content-in-tile) to get either historic or real-time Content from that tile
 * If the API returns Content that is in the tile, but not in the provided geometry, it throws it onthe ground
 * Content in the provided geometry is emitted from a [Readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable)
 
