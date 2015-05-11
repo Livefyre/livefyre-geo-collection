@@ -314,7 +314,7 @@
         validInput = validateDistance(radiusInMeters);
 
         if (!validInput) {
-            $('.error').text('That\'s pretty big! Try something smaller.');
+            $('.error').text('Those numbers are out of range. Try again.');
         } else {
             angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
             geometry = createPolydata(angleDegrees, geoCoords);
