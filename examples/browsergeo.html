@@ -171,14 +171,13 @@
         marker.setPopupContent(text);
         markerMoved = true;
         if (fenceState) {
-            removeFence(fence, map);
+            removeFence(fence);
         }
         geoUpdateUI(geoCoords);
         createPoly(geoCoords, addFence, renderMediawall);
     }
 
     function mapInit(geoCoords) {
-        var center;
         map = window.map = L.map('map').locate({
             setView: true,
             maxZoom: 15,
@@ -257,11 +256,9 @@
             geoCoords.x = e.target._latlng.lat;
             geoCoords.y = e.target._latlng.lng;
             geoUpdateUI(geoCoords);
-            removeFence(fence, map);
+            removeFence(fence);
             markerMoved = true;
-            if (wallState) {
-              createPoly(geoCoords, addFence, renderMediawall);
-            }
+            createPoly(geoCoords, addFence, renderMediawall);
         });
         marker.on('dragstart', function(e) {
 
@@ -273,7 +270,7 @@
         try {
             wall.destroy();
             $('#geo').after('<main id="app"></main>');
-        } catch (e ){}
+        } catch (e) { }
       }
       Livefyre.require([
               'streamhub-wall#3',
@@ -329,7 +326,7 @@
         }
 
         function validateDistance(r) {
-            var MAX = 3220290;
+            var MAX = 3220290; // ~2000 miles
             var MIN = parseFloat('.1');
             return (r < MAX && r > MIN) ? true : false;
         }
