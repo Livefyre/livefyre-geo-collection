@@ -1,7 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 
 <head>
+    <meta charset="utf-8">
+    <title>Geo Filtering</title>
     <link rel="stylesheet" type="text/css" href="http://s.codepen.io/assets/reset/normalize.css" />
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
     <style>
@@ -73,6 +75,8 @@
 <body>
     <div id="geo">
         <h1>Geo Filtering a Livefyre Collection</h1>
+        <h3> Twitter, Instagram</h3>
+        <p>#snow, #lightning, #hail, #flood, #tornado, #sleet, #ice, #wind, #blizzard, #hurricane, #storm, #sun, #clouds</p>
         <div id="map"></div>
         <div id="js-location-wrapper">
             <h2>Your Geo Point Coordinates</h2>
@@ -80,13 +84,19 @@
                 <li id="js-your-lat">Latitude: <span></span></li>
                 <li id="js-your-lon">Longitude: <span></span></li>
                 <li id="js-your-zoom">Zoom: <span></span></li>
-                <button data-lat="37.7749300" data-city="Watch out for earthquakes!" data-lng="-122.4194200" class="btn quick" id="sf">
-                    San Francisco, CA
-                </button>
-                <button class="btn quick" data-city="Watch out for tornados!" data-lat="38.959902" data-lng="-95.253199" id="kansas">
-                    Lawrence, KS
-                </button>
             </ul>
+            <button data-lat="37.7749300" data-city="Watch out for earthquakes!" data-lng="-122.4194200" class="btn quick" id="sf">
+                San Francisco, CA
+            </button>
+            <button class="btn quick" data-city="Watch out for tornados!" data-lat="38.959902" data-lng="-95.253199" id="kansas">
+                Lawrence, KS
+            </button>
+            <button class="btn quick" data-city="Watch out for all the delicious food!" data-lat="33.7490000" data-lng="-84.3879800" id="atlanta">
+                Atlanta, GA
+            </button>
+            <button class="btn quick" data-city="Watch out for falling bridges!" data-lat="51.5085300" data-lng="-0.1257400" id="london">
+                London, UK
+            </button>
         </div>
         <div id="js-distance-wrapper">
             <h2>Enter Radius From Marker</h2>
@@ -124,12 +134,19 @@
     var map = null;
     var distance = null;
     var unitType = null;
+    var wall = null;
 
     // bruces collection http://admin.client-demo-accounts.fyre.co/v3/site/372680/collections/122538518
     var weatherCollection = {
         network: 'client-demo-accounts.fyre.co',
         siteId: 372680,
         articleId: 'custom-1426705037726'
+    };
+
+    var cidsWeatherCollection = {
+        network: 'sales.fyre.co',
+        siteId: 371516,
+        articleId: 'custom-1431365679102'
     };
 
     var bensCollection = {
@@ -154,25 +171,23 @@
         marker.setPopupContent(text);
         markerMoved = true;
         if (fenceState) {
-            removeFence(fence);
+            removeFence(fence, map);
         }
         geoUpdateUI(geoCoords);
         createPoly(geoCoords, addFence, renderMediawall);
     }
 
     function mapInit(geoCoords) {
-
+        var center;
         map = window.map = L.map('map').locate({
             setView: true,
             maxZoom: 15,
             enableHighAccuracy: true,
-            maximumAge: 59999.9,
-            worldCopyJump: true
+            maximumAge: 59999.9
         });
 
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-            attribution: 'Livefyre Geo Maps',
-            detectRetina: true
+            attribution: 'Livefyre Geo Maps'
         }).addTo(map);
 
         map.on('load', function(e) {
@@ -242,7 +257,7 @@
             geoCoords.x = e.target._latlng.lat;
             geoCoords.y = e.target._latlng.lng;
             geoUpdateUI(geoCoords);
-            removeFence(fence);
+            removeFence(fence, map);
             markerMoved = true;
             if (wallState) {
               createPoly(geoCoords, addFence, renderMediawall);
@@ -253,88 +268,24 @@
         });
     }
 
-    /*
-      // not using this function for the demo. using leaflet's geolocator.
-      // however this is how a browser would handle finding it's geolocation
-        function getGeo (geoCoords, zoomLevel, map, cb) {
-
-            var deferGeo, geoSuccess, geoError, resolvePromise, rejectPromise, getPos, toggleLoader;
-
-            toggleLoader = function() {
-              $('#loader').toggleClass('visible');
-            };
-
-            deferGeo = new $.Deferred;
-
-            resolvePromise = function() {
-                deferGeo.resolve();
-            };
-
-            rejectPromise = function() {
-                deferGeo.reject();
-            };
-
-            geoError = function() {
-                rejectPromise();
-            };
-
-            geoSuccess = function (x, y, geoCoords, zoomLevel) {
-                if (!zoomLevel) {
-                  zoomLevel = 1;
-                }
-                geoCoords.x = x;
-                geoCoords.y = y;
-                geoCoords.z = zoomLevel;
-                resolvePromise();
-            };
-
-            getPos = function (deferGeo, zoomLevel) {
-              navigator.geolocation.getCurrentPosition(
-                  function(pos) {
-                      geoSuccess(pos.coords.latitude, pos.coords.longitude, geoCoords, zoomLevel);
-                  },
-                  function() {
-                      geoError();
-                  }, {
-                      maximumAge: 60000,
-                      timeout: 10000,
-                      enableHighAccuracy: true
-                  }
-              );
-                return deferGeo.promise();
-            };
-
-            deferGeo.done(function() {
-              return cb(map, geoCoords);
-              })
-              .fail(function() {
-                conosle.log('could not find you');
-              })
-              .always(function() {
-
-              });
-
-            getPos(deferGeo, zoomLevel);
-
-        }
-      */
-
     function renderMediawall(geometry) {
       if (wallState) {
-        wall.destroy();
-        $('#geo').after('<main id="app"></main>');
+        try {
+            wall.destroy();
+            $('#geo').after('<main id="app"></main>');
+        } catch (e ){}
       }
       Livefyre.require([
               'streamhub-wall#3',
               'streamhub-sdk#2',
-              '../dist/livefyre-geo-collection.lf.js'
+              'livefyre-geo-collection#0'
 
           ],
           function(Wall, SDK, GeoCollection) {
 
               var appEl = document.getElementById('app');
               var geoCollection = new(GeoCollection.GeoCollection)({
-                  collection: bensCollection,
+                  collection: cidsWeatherCollection,
                   geometry: geometry,
                   transformState: function stateToContent(state) {
                       var contents = SDK.StateToContent.transform(state);
@@ -346,7 +297,7 @@
                   }
               });
 
-              var wall = window.wall = new Wall({
+              wall = window.wall = new Wall({
                   el: appEl,
                   collection: geoCollection
               });
@@ -382,6 +333,7 @@
             var MIN = parseFloat('.1');
             return (r < MAX && r > MIN) ? true : false;
         }
+
 
         function convertDistanceToMeters(distance, unitType) {
             var distMeters;
@@ -441,14 +393,6 @@
             });
         }
     }
-
-    /*
-      $('#zoom-form').submit(function(e) {
-        e.preventDefault();
-        var zoomLevel = $('#zoom').val();
-        getGeo(geoCoords, map, zoomLevel);
-      });
-     */
 
     $('#distance').focus(function() {
         $(this).val('');
