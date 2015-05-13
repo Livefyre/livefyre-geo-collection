@@ -109,7 +109,7 @@
                         <option value="km">km</option>
                     </select>
                     <button type="submit" class="btn" id="submit-radius">
-                        Create Geo Fenced Media Wall
+                        Create Fence
                     </button>
                 </div>
             </form>
@@ -186,7 +186,9 @@
         });
 
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-            attribution: 'Livefyre Geo Maps'
+            attribution: 'Livefyre Geo Maps',
+            reuseTiles: true,
+            detectRetina: true
         }).addTo(map);
 
         map.on('load', function(e) {
@@ -210,6 +212,9 @@
         map.on('click', function(e) {
 
         });
+
+        createControls();
+
     }
 
     function addFence(geometry) {
@@ -300,6 +305,26 @@
               });
           });
       wallState = true;
+    }
+    function createControls() {
+        var formHTML = '<form class="form-inline" role="form" id="radius-form"><div class="form-group"><label for="distance"></label><input class="" value="" id="distance" placeholder="Radial Min: 0.1" /><select id="units"><option value="mi">mi</option><option value="km">km</option></select><button type="submit" class="btn" id="submit-radius">Create Fence</button></div></form>';
+
+
+        var geoInput = L.Control.extend({
+            initialize: function (foo, options) {
+                L.Util.setOptions(this, options);
+            },
+            onAdd: function (map) {
+                // create the control container with a particular class name
+                var container = L.DomUtil.create('div', 'geo-input-control');
+
+                // ... initialize other DOM elements, add listeners, etc.
+                return container;
+            }
+        });
+
+        map.addControl(new geoInput());
+
     }
 
     function createPoly(geoCoords, addFence, renderMediawall) {
@@ -406,10 +431,6 @@
         e.preventDefault();
         $('.error').text('');
         $('#submit-radius').text('Update Geo Fenced Media Wall');
-        if (fenceState) {
-            removeFence(fence);
-        }
-        createPoly(geoCoords, addFence, renderMediawall);
     });
 
     mapInit(geoCoords);
