@@ -225,6 +225,7 @@
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
         createPoly(geoCoords, addFence, renderMediawall);
+        //map.fireEvent('viewreset');
     }
 
     function mapInit(geoCoords) {
@@ -250,6 +251,10 @@
             maxZoom: 15,
             enableHighAccuracy: true,
             maximumAge: 59999.9
+        });
+
+        map.on('viewreset', function (e) {
+            console.log(e);
         });
 
         map.on('load', function(e) {
