@@ -35,6 +35,7 @@
             <div class="sidebar-pane" id="home">
                 <h2>How to Geo Fence Content</h2>
                 <p>Use the icons to the left or adjust the Marker <i class="fa fa-map-marker"></i> on the map to get started. If no distance is set in the Settings section <i class="fa fa-gear"></i> a geo fence radial distance of 0.1 </span> will be applied. You can manually move the geo fence by dragging the Marker on the map.</p>
+                <p>If you've created a fence and don't see any content in your Media Wall, it's probably because there is no content in your Collection within your fence perimeter. Try moving the Marker or making your fence larger and see what happens (also, check that your settings are correct ;-)</p>
             </div>
             <div class="sidebar-pane" id="settings">
                 <h2>Collection Settings</h2>
@@ -57,6 +58,14 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <div>
+                        <label for="marker-lat">Marker Lat: </label>
+                        <input class="" value="" id="marker-lat" placeholder="decimal format" />
+                        </div>
+                        <div>
+                        <label for="marker-lng">Marker Lng: </label>
+                        <input class="" value="" id="marker-lng" placeholder="decimal format" />
+                        </div>
                         <div>
                         <label for="distance">Fence Radius: </label>
                         <select id="units">
@@ -111,23 +120,32 @@
 
     "use strict";
 
-    var geoCoords = {};
+    var geoCoords = {
+        x: null,
+        y: null
+    };
+
     var geometry = null;
-    var wallState = false;
     var markerMoved = false;
     var marker = null;
     var map = null;
-    var distance = null;
-    var unitType = null;
-    var wall = null;
+
+    var wall = {
+        state: null,
+        lf: null
+    };
+
     var collectionDetails = {
         network: null,
         siteId: null,
         articleId: null
     };
+
     var fence = {
         state: false,
-        el: null
+        el: null,
+        distance: null,
+        unitType: ''
     };
 
     var defaultData = $('#default-values').data();
@@ -185,9 +203,7 @@
             window.localStorage.setItem(k, vStr);
         },
         checkStorage: function() {
-            if (window.localStorage) {
-                this.avaialable = true;
-            }
+            this.avaialable = (window.localStorage) ?  true : false;
             return this.avaialable;
         }
     };
@@ -196,7 +212,7 @@
         $('#network').val(collectionDetails.network);
         $('#article-id').val(collectionDetails.articleId);
         $('#site-id').val(collectionDetails.siteId);
-        //$('#distance').val('0.1');
+        updateSettingsGeoInputs(geoCoords);
     }
 
     function mapSetView(geoCoords, addFence, renderMediawall) {
@@ -209,6 +225,7 @@
             removeFence(fence);
         }
         geoMarkerCoordsUI(geoCoords);
+        updateSettingsGeoInputs(geoCoords);
         createPoly(geoCoords, addFence, renderMediawall);
     }
 
@@ -251,10 +268,9 @@
             });
 
             addMarker(center);
-            updateView(geoCoords);
-
+            updateSidebarMarkerView(geoCoords);
+            updateSettingsGeoInputs(geoCoords);
             var sidebar = L.control.sidebar('sidebar').addTo(map);
-
 
         });
 
@@ -270,9 +286,10 @@
 
 
     }
+
     function updateUnitType() {
-        unitType = $('#units').val();
-        return unitType;
+        fence.unitType = $('#units').val();
+        return fence.unitType;
     }
 
     function addFence(geometry) {
@@ -284,7 +301,7 @@
               };
           },
           onEachFeature: function(feature, layer) {
-              layer.bindPopup('The diameter of your fence is <br /> ' + (distance * 2) +' ' + updateUnitType() + '.');
+              layer.bindPopup('The diameter of your fence is <br /> ' + (fence.distance * 2) +' ' + updateUnitType() + '.');
           }
       });
       map.addLayer(fence.el);
@@ -298,10 +315,20 @@
       } catch (e) {}
     }
 
-    function updateView(geoCoords) {
-      $('#js-your-lat > span').text(geoCoords.x);
-      $('#js-your-lon > span').text(geoCoords.y);
-      $('#js-your-zoom > span').text(geoCoords.z);
+    function updateSidebarMarkerView(geoCoords) {
+        $('#js-your-lat > span').text(geoCoords.x);
+        $('#js-your-lon > span').text(geoCoords.y);
+        $('#js-your-zoom > span').text(geoCoords.z);
+    }
+
+    function updateSettingsGeoInputs(geoCoords) {
+        $('#marker-lng').val(geoCoords.y);
+        $('#marker-lat').val(geoCoords.x);
+    }
+
+    function moveMarker(geoCoords) {
+        var latlng = L.latLng(geoCoords.x, geoCoords.y);
+        marker.setLatLng(latlng);
     }
 
     function addMarker(o) {
@@ -318,6 +345,7 @@
             geoCoords.y = e.target._latlng.lng;
             marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
             geoMarkerCoordsUI(geoCoords);
+            updateSettingsGeoInputs(geoCoords);
             removeFence(fence);
             markerMoved = true;
             createPoly(geoCoords, addFence, renderMediawall);
@@ -328,7 +356,7 @@
     }
 
     function renderMediawall(geometry) {
-      if (wallState) {
+      if (wall.state) {
         try {
             wall.destroy();
             $('#map').after('<main id="app"></main>');
@@ -361,7 +389,7 @@
                   }
               });
 
-              wall = window.wall = new Wall({
+              wall.lf = window.wall = new Wall({
                   el: appEl,
                   collection: geoCollection
               });
@@ -369,18 +397,18 @@
                 local.setStorage('collectionDetails', collectionDetails);
             }
           });
-      wallState = true;
+      wall.state = true;
     }
 
     function createPoly(geoCoords, addFence, renderMediawall) {
 
         var radiusInMeters, validInput, angleDegrees;
 
-        distance = parseFloat($('#distance').val(), 10);
-        distance = (distance > 0) ? distance : parseFloat('.1', 10);
-        unitType = updateUnitType();
+        fence.distance = parseFloat($('#distance').val(), 10);
+        fence.distance = (fence.distance > 0) ? fence.distance : parseFloat('.1', 10);
+        fence.unitType = updateUnitType();
 
-        radiusInMeters = convertDistanceToMeters(distance, unitType);
+        radiusInMeters = convertDistanceToMeters(fence);
         validInput = validateDistance(radiusInMeters);
 
         if (!validInput) {
@@ -389,10 +417,11 @@
             angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
             geometry = createPolydata(angleDegrees, geoCoords);
             addFence(geometry);
+            moveMarker(geoCoords)
             geoCoords.z = map.getZoom();
             renderMediawall(geometry);
             validateGeoJSON(geometry);
-            $('#distance').val(distance);
+            $('#distance').val(fence.distance);
             $('#submit-radius').text('Update Fence');
         }
 
@@ -403,12 +432,12 @@
         }
 
 
-        function convertDistanceToMeters(distance, unitType) {
+        function convertDistanceToMeters(fence) {
             var distMeters;
-            if (unitType === 'km') {
-                distMeters = distance * 1000;
-            } else if (unitType === 'mi') {
-                distMeters = distance * 1609.34;
+            if (fence.unitType === 'km') {
+                distMeters = fence.distance * 1000;
+            } else if (fence.unitType === 'mi') {
+                distMeters = fence.distance * 1609.34;
             }
             return distMeters;
         }
@@ -484,7 +513,17 @@
         if (fence.state) {
             removeFence(fence);
         }
+        if (marker) {
+
+        }
+        var lng = parseFloat($('#marker-lng').val());
+        var lat = parseFloat($('#marker-lat').val());
+
         updateCollectionDeets();
+        if (!isNaN(lng) && !isNaN(lat)) {
+            geoCoords.x = lat;
+            geoCoords.y = lng;
+        }
         createPoly(geoCoords, addFence, renderMediawall);
     });
 
