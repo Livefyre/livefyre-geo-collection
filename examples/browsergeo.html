@@ -10,42 +10,43 @@
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
     <link rel="stylesheet" href="css/leaflet-sidebar.css" />
     <style>
-    body {
-        color: #333;
-    }
-    h2 {
-        margin: 4px 0;
-    }
+        body {
+            color: #333;
+            font-family: "Helvetica Neue",Arial,Helvetica,Geneva,sans-serif;
+        }
+        h2 {
+            margin: 5px 0 20px 0;
+        }
 
-    .quick {
-        margin: 10px 0 0 0;
-    }
+        .quick {
+            margin: 10px 0 0 0;
+        }
 
-    ul {
-        list-style-type: none;
-        font-size: 18px;
-    }
+        ul {
+            list-style-type: none;
+            font-size: 18px;
+        }
 
-    #id {
-        margin: 0 auto;
-        width: 1024px;
-    }
+        #id {
+            margin: 0 auto;
+            width: 1024px;
+        }
 
-    #map {
-        height: 500px;
-    }
+        #map {
+            height: 500px;
+        }
 
-    .visible {
-        visibility: visible !important;
-    }
+        .visible {
+            visibility: visible !important;
+        }
 
-    .leaflet-container {
-        background: url('http://client-solutions.livefyre.com/cid/maps/ajax-loader.gif') center center no-repeat #fff;
-    }
+        .leaflet-container {
+            background: url('http://client-solutions.livefyre.com/cid/maps/ajax-loader.gif') center center no-repeat #fff;
+        }
 
-    .leaflet-popup-content {
-        text-align: left;
-    }
+        .leaflet-popup-content {
+            text-align: left;
+        }
 
     </style>
     <script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
@@ -72,21 +73,42 @@
         <!-- Tab panes -->
         <div class="sidebar-content active">
             <div class="sidebar-pane" id="home">
-                <h2>Geo Fence</h2>
-                <p>Use the icons to the left or adjust the Marker <i class="fa fa-map-marker"></i> position to get started. If no distance is set in the Settings section <i class="fa fa-gear"></i> a radial distance of 0.1 </span> will be applied.</p>
+                <h2>How to Geo Fence Content</h2>
+                <p>Use the icons to the left or adjust the Marker <i class="fa fa-map-marker"></i> on the map to get started. If no distance is set in the Settings section <i class="fa fa-gear"></i> a geo fence radial distance of 0.1 </span> will be applied. You can manually move the geo fence by dragging the Marker on the map.</p>
             </div>
             <div class="sidebar-pane" id="settings">
-                <h2>Fence Radius</h2>
+                <h2>Collection Settings</h2>
                 <form class="form-inline" role="form" id="radius-form">
                     <div class="form-group">
-                        <label for="distance"></label>
-                        <input class="" value="" id="distance" placeholder="Radial Min: 0.1" />
+                        <button class="btn" id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827">
+                            Default Settings
+                        </button>
+                        <div>
+                        <label for="network">Network: </label>
+                        <input class="" value="" id="network" placeholder="xxxxxx.fyre.co" />
+                        </div>
+                        <div>
+                        <label for="site-id">SiteId: </label>
+                        <input class="" value="" id="site-id" placeholder="xxxxxx" />
+                        </div>
+                        <div>
+                        <label for="article-id">ArticleId: </label>
+                        <input class="" value="" id="article-id" placeholder="custom-xxxxxxxxxxxxx" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div>
+                        <label for="distance">Fence Radius: </label>
                         <select id="units">
                             <option value="mi">mi</option>
                             <option value="km">km</option>
                         </select>
+                        <input class="" value="" id="distance" placeholder="0.1" />
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <button type="submit" class="btn" id="submit-radius">
-                            Create
+                            Create Fence
                         </button>
                     </div>
                 </form>
@@ -101,7 +123,10 @@
                 </ul>
             </div>
             <div class="sidebar-pane" id="messages">
-                <h2>Quick Links</h2>
+                <h2>Quick Locations</h2>
+                <button data-lat="" data-lng="" class="btn quick" id="you">
+                    Your Location
+                </button>
                 <button data-lat="37.7749300" data-lng="-122.4194200" class="btn quick" id="sf">
                     San Francisco
                 </button>
@@ -110,9 +135,6 @@
                     Lawrence, KS
                 </button>
 -->
-                <button data-lat="" data-lng="" class="btn quick" id="you">
-                    Your Location
-                </button>
                 <button class="btn quick" data-lat="40.7142700" data-lng="-74.0059700" id="nyc">
                     New York City
                 </button>
@@ -128,12 +150,11 @@
     <script src="https://cdn.livefyre.com/Livefyre.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
     <script>
+
     "use strict";
 
     var geoCoords = {};
     var geometry = null;
-    var fenceState = false;
-    var fence = null;
     var wallState = false;
     var markerMoved = false;
     var marker = null;
@@ -141,6 +162,17 @@
     var distance = null;
     var unitType = null;
     var wall = null;
+    var collectionDetails = {
+        network: null,
+        siteId: null,
+        articleId: null
+    };
+    var fence = {
+        state: false,
+        el: null
+    };
+
+    var defaultData = $('#default-values').data();
 
     // bruces collection http://admin.client-demo-accounts.fyre.co/v3/site/372680/collections/122538518
     var weatherCollection = {
@@ -161,10 +193,52 @@
         articleId: 'uat-ben-geo-0'
     };
 
-    function geoUpdateUI(data) {
+    function geoMarkerCoordsUI(data) {
         $('#js-your-lat > span').text(data.x);
         $('#js-your-lon > span').text(data.y);
         $('#js-your-zoom > span').text(data.z);
+    }
+
+    function updateCollectionDeets(data) {
+        if (!data) {
+            collectionDetails.network = $('#network').val();
+            collectionDetails.articleId = $('#article-id').val();
+            collectionDetails.siteId = $('#site-id').val();
+        } else {
+            collectionDetails.network = data.network;
+            collectionDetails.articleId = data.articleId;
+            collectionDetails.siteId = data.siteId;
+            applyInputDeets(data);
+        }
+
+        if (local.avaialable) {
+            local.setStorage('collectionDetails', collectionDetails);
+        }
+    }
+
+    var local = {
+        avaialable: false,
+        getStorage: function (k) {
+            var vObj = JSON.parse(window.localStorage.getItem(k));
+            return vObj;
+        },
+        setStorage: function (k, v) {
+            var vStr = JSON.stringify(v);
+            window.localStorage.setItem(k, vStr);
+        },
+        checkStorage: function() {
+            if (window.localStorage) {
+                this.avaialable = true;
+            }
+            return this.avaialable;
+        }
+    };
+
+    function applyInputDeets(collectionDetails) {
+        $('#network').val(collectionDetails.network);
+        $('#article-id').val(collectionDetails.articleId);
+        $('#site-id').val(collectionDetails.siteId);
+        //$('#distance').val('0.1');
     }
 
     function mapSetView(geoCoords, addFence, renderMediawall) {
@@ -173,10 +247,10 @@
         marker.setLatLng(latlng);
         marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
         markerMoved = true;
-        if (fenceState) {
+        if (fence.state) {
             removeFence(fence);
         }
-        geoUpdateUI(geoCoords);
+        geoMarkerCoordsUI(geoCoords);
         createPoly(geoCoords, addFence, renderMediawall);
     }
 
@@ -185,14 +259,6 @@
         var map = window.map = L.map('map', {
             zoomControl: false
         });
-
-        map.locate({
-            setView: true,
-            maxZoom: 15,
-            enableHighAccuracy: true,
-            maximumAge: 59999.9
-        });
-
 
         var zoomControl = L.control.zoom({
             position: 'topright'
@@ -206,7 +272,15 @@
 
         map.addControl(zoomControl);
 
+        map.locate({
+            setView: true,
+            maxZoom: 15,
+            enableHighAccuracy: true,
+            maximumAge: 59999.9
+        });
+
         map.on('load', function(e) {
+
             var center = map.getCenter();
 
             geoCoords.x = center.lat;
@@ -244,8 +318,8 @@
     }
 
     function addFence(geometry) {
-      fenceState = true;
-      fence = L.geoJson(geometry, {
+      fence.state = true;
+      fence.el = L.geoJson(geometry, {
           style: function(feature) {
               return {
                   color: 'red'
@@ -255,13 +329,14 @@
               layer.bindPopup('The diameter of your fence is <br /> ' + (distance * 2) +' ' + updateUnitType() + '.');
           }
       });
-      map.addLayer(fence);
-      map.fitBounds(fence.getBounds());
+      map.addLayer(fence.el);
+      map.fitBounds(fence.el.getBounds());
+
     }
 
     function removeFence(fence) {
       try {
-          map.removeLayer(fence);
+          map.removeLayer(fence.el);
       } catch (e) {}
     }
 
@@ -284,7 +359,7 @@
             geoCoords.x = e.target._latlng.lat;
             geoCoords.y = e.target._latlng.lng;
             marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
-            geoUpdateUI(geoCoords);
+            geoMarkerCoordsUI(geoCoords);
             removeFence(fence);
             markerMoved = true;
             createPoly(geoCoords, addFence, renderMediawall);
@@ -301,6 +376,11 @@
             $('#map').after('<main id="app"></main>');
         } catch (e) { }
       }
+
+      if (!collectionDetails.network || !collectionDetails.articleId || !collectionDetails.siteId) {
+        updateCollectionDeets(defaultData);
+      }
+
       Livefyre.require([
               'streamhub-wall#3',
               'streamhub-sdk#2',
@@ -311,7 +391,7 @@
 
               var appEl = document.getElementById('app');
               var geoCollection = new(GeoCollection.GeoCollection)({
-                  collection: bensCollection,
+                  collection: collectionDetails,
                   geometry: geometry,
                   transformState: function stateToContent(state) {
                       var contents = SDK.StateToContent.transform(state);
@@ -327,6 +407,9 @@
                   el: appEl,
                   collection: geoCollection
               });
+            if (local.avaialable) {
+                local.setStorage('collectionDetails', collectionDetails);
+            }
           });
       wallState = true;
     }
@@ -352,7 +435,7 @@
             renderMediawall(geometry);
             validateGeoJSON(geometry);
             $('#distance').val(distance);
-            $('#submit-radius').text('Update');
+            $('#submit-radius').text('Update Fence');
         }
 
         function validateDistance(r) {
@@ -421,22 +504,42 @@
         }
     }
 
+    $('body').on('click', '#default-values', function (e) {
+        e.preventDefault();
+        if (fence.state) {
+            removeFence(fence);
+        }
+        updateCollectionDeets(defaultData);
+        createPoly(geoCoords, addFence, renderMediawall);
+    });
+
     $('body').on('click', '.quick', function(e) {
         var $el = $(e.target);
         geoCoords.x = parseFloat($el.data('lat'));
         geoCoords.y = parseFloat($el.data('lng'));
         mapSetView(geoCoords, addFence, renderMediawall);
     });
+
     $('#radius-form').submit(function(e) {
         e.preventDefault();
         $('.error').text('');
-        if (fenceState) {
+        if (fence.state) {
             removeFence(fence);
         }
+        updateCollectionDeets();
         createPoly(geoCoords, addFence, renderMediawall);
     });
 
-    mapInit(geoCoords);
+    if (local.checkStorage()) {
+        if (local.getStorage('collectionDetails') && local.getStorage('collectionDetails') !== '') {
+            applyInputDeets(local.getStorage('collectionDetails'));
+        }
+    }
+
+    $(document).ready(function () {
+        mapInit(geoCoords);
+    });
+
     </script>
 </body>
 
