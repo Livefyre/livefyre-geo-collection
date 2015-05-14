@@ -292,3 +292,41 @@
         left: 470px;
     }
 }
+
+body {
+    color: #333;
+    font-family: "Helvetica Neue",Arial,Helvetica,Geneva,sans-serif;
+}
+h2 {
+    margin: 5px 0 20px 0;
+}
+
+.quick {
+    margin: 10px 0 0 0;
+}
+
+ul {
+    list-style-type: none;
+    font-size: 18px;
+}
+
+#id {
+    margin: 0 auto;
+    width: 1024px;
+}
+
+#map {
+    height: 500px;
+}
+
+.visible {
+    visibility: visible !important;
+}
+
+.leaflet-container {
+    background: url('http://client-solutions.livefyre.com/cid/maps/ajax-loader.gif') center center no-repeat #fff;
+}
+
+.leaflet-popup-content {
+    text-align: left;
+}
