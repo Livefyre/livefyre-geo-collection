@@ -3,17 +3,18 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Geo Filtering</title>
     <link rel="stylesheet" type="text/css" href="http://s.codepen.io/assets/reset/normalize.css" />
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <link rel="stylesheet" href="css/leaflet-sidebar.css" />
     <style>
     body {
         color: #333;
     }
-
-    #geo {
-        text-align: center;
-        margin: 0 auto;
+    h2 {
+        margin: 4px 0;
     }
 
     .quick {
@@ -34,32 +35,18 @@
         height: 500px;
     }
 
-    #loader {
-        background: url('http://client-solutions.livefyre.com/cid/maps/ajax-loader.gif') center center no-repeat transparent;
-        width: 16px;
-        height: 16px;
-        display: block;
-        visibility: hidden;
-        margin: 10px auto;
-    }
-
     .visible {
         visibility: visible !important;
     }
 
-    #js-polygon-wrapper,
-    #js-location-wrapper,
-    #js-distance-wrapper {
-        display: none;
-    }
-
     .leaflet-container {
-        background: url('http://www.broadwaybalancesamerica.com/images/ajax-loader.gif') center center no-repeat #fff;
+        background: url('http://client-solutions.livefyre.com/cid/maps/ajax-loader.gif') center center no-repeat #fff;
     }
 
     .leaflet-popup-content {
-        text-align: center;
+        text-align: left;
     }
+
     </style>
     <script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
     <script>
@@ -73,52 +60,71 @@
 </head>
 
 <body>
-    <div id="geo">
-        <h1>Geo Filtering a Livefyre Collection</h1>
-        <h3> Twitter, Instagram</h3>
-        <p>#snow, #lightning, #hail, #flood, #tornado, #sleet, #ice, #wind, #blizzard, #hurricane, #storm, #sun, #clouds</p>
-        <div id="map"></div>
-        <div id="js-location-wrapper">
-            <h2>Your Geo Point Coordinates</h2>
-            <ul>
-                <li id="js-your-lat">Latitude: <span></span></li>
-                <li id="js-your-lon">Longitude: <span></span></li>
-                <li id="js-your-zoom">Zoom: <span></span></li>
-            </ul>
-            <button data-lat="37.7749300" data-city="Watch out for earthquakes!" data-lng="-122.4194200" class="btn quick" id="sf">
-                San Francisco, CA
-            </button>
-            <button class="btn quick" data-city="Watch out for tornados!" data-lat="38.959902" data-lng="-95.253199" id="kansas">
-                Lawrence, KS
-            </button>
-            <button class="btn quick" data-city="Watch out for all the delicious food!" data-lat="33.7490000" data-lng="-84.3879800" id="atlanta">
-                Atlanta, GA
-            </button>
-            <button class="btn quick" data-city="Watch out for falling bridges!" data-lat="51.5085300" data-lng="-0.1257400" id="london">
-                London, UK
-            </button>
-        </div>
-        <div id="js-distance-wrapper">
-            <h2>Enter Radius From Marker</h2>
-            <form class="form-inline" role="form" id="radius-form">
-                <div class="form-group">
-                    <label for="distance"></label>
-                    <input class="" value="" id="distance" placeholder="Radial Min: 0.1" />
-                    <select id="units">
-                        <option value="mi">mi</option>
-                        <option value="km">km</option>
-                    </select>
-                    <button type="submit" class="btn" id="submit-radius">
-                        Create Fence
-                    </button>
-                </div>
-            </form>
-            <p class="error"></p>
+    <div id="sidebar" class="sidebar collapsed">
+        <!-- Nav tabs -->
+        <ul class="sidebar-tabs" role="tablist">
+            <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
+            <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
+            <li><a href="#profile" role="tab"><i class="fa fa-map-marker"></i></a></li>
+            <li><a href="#messages" role="tab"><i class="fa fa-fast-forward"></i></a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="sidebar-content active">
+            <div class="sidebar-pane" id="home">
+                <h2>Geo Fence</h2>
+                <p>Use the icons to the left or adjust the Marker <i class="fa fa-map-marker"></i> position to get started. If no distance is set in the Settings section <i class="fa fa-gear"></i> a radial distance of 0.1 will be applied.</p>
+            </div>
+            <div class="sidebar-pane" id="settings">
+                <h2>Fence Radius</h2>
+                <form class="form-inline" role="form" id="radius-form">
+                    <div class="form-group">
+                        <label for="distance"></label>
+                        <input class="" value="" id="distance" placeholder="Radial Min: 0.1" />
+                        <select id="units">
+                            <option value="mi">mi</option>
+                            <option value="km">km</option>
+                        </select>
+                        <button type="submit" class="btn" id="submit-radius">
+                            Create
+                        </button>
+                    </div>
+                </form>
+                <p class="error"></p>
+            </div>
+            <div class="sidebar-pane" id="profile">
+                <h2>Marker Coordinates</h2>
+                <ul>
+                    <li id="js-your-lat">Latitude: <span></span></li>
+                    <li id="js-your-lon">Longitude: <span></span></li>
+                    <li id="js-your-zoom">Zoom: <span></span></li>
+                </ul>
+            </div>
+            <div class="sidebar-pane" id="messages">
+                <h2>Quick Links</h2>
+                <button data-lat="37.7749300" data-lng="-122.4194200" class="btn quick" id="sf">
+                    San Francisco
+                </button>
+    <!--
+                <button class="btn quick" data-city="Watch out for tornados!" data-lat="38.959902" data-lng="-95.253199" id="kansas">
+                    Lawrence, KS
+                </button>
+-->
+                <button data-lat="" data-lng="" class="btn quick" id="you">
+                    Your Location
+                </button>
+                <button class="btn quick" data-lat="40.7142700" data-lng="-74.0059700" id="nyc">
+                    New York City
+                </button>
+            </div>
         </div>
     </div>
+
+    <div id="map" class="sidebar-map"></div>
     <main id="app"></main>
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="js/leaflet-sidebar.min.js"></script>
     <script src="https://cdn.livefyre.com/Livefyre.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
     <script>
@@ -159,16 +165,13 @@
         $('#js-your-lat > span').text(data.x);
         $('#js-your-lon > span').text(data.y);
         $('#js-your-zoom > span').text(data.z);
-        $('#js-location-wrapper').show();
-        $('#js-distance-wrapper').show();
-        $('h2', '#js-location-wrapper').text('New Geo Point Coordinates');
     }
 
-    function mapSetView(geoCoords, text, addFence, renderMediawall) {
+    function mapSetView(geoCoords, addFence, renderMediawall) {
         var latlng = L.latLng(geoCoords.x, geoCoords.y);
         map.setView(latlng);
         marker.setLatLng(latlng);
-        marker.setPopupContent(text);
+        marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
         markerMoved = true;
         if (fenceState) {
             removeFence(fence);
@@ -178,11 +181,21 @@
     }
 
     function mapInit(geoCoords) {
-        map = window.map = L.map('map').locate({
+
+        var map = window.map = L.map('map', {
+            zoomControl: false
+        });
+
+        map.locate({
             setView: true,
             maxZoom: 15,
             enableHighAccuracy: true,
             maximumAge: 59999.9
+        });
+
+
+        var zoomControl = L.control.zoom({
+            position: 'topright'
         });
 
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
@@ -191,6 +204,8 @@
             detectRetina: true
         }).addTo(map);
 
+        map.addControl(zoomControl);
+
         map.on('load', function(e) {
             var center = map.getCenter();
 
@@ -198,8 +213,16 @@
             geoCoords.y = center.lng;
             geoCoords.z = map.getZoom();
 
+            $('#you').data({
+                'lat': geoCoords.x,
+                'lng': geoCoords.y
+            });
+
             addMarker(center);
             updateView(geoCoords);
+
+            var sidebar = L.control.sidebar('sidebar').addTo(map);
+
 
         });
 
@@ -213,7 +236,6 @@
 
         });
 
-        createControls();
 
     }
 
@@ -226,7 +248,7 @@
               };
           },
           onEachFeature: function(feature, layer) {
-              layer.bindPopup('This is where your content comes from');
+              layer.bindPopup('The diameter of your fence is <br /> ' + (distance * 2) +' ' + unitType + '.');
           }
       });
       map.addLayer(fence);
@@ -243,8 +265,6 @@
       $('#js-your-lat > span').text(geoCoords.x);
       $('#js-your-lon > span').text(geoCoords.y);
       $('#js-your-zoom > span').text(geoCoords.z);
-      $('#js-location-wrapper').show();
-      $('#js-distance-wrapper').show();
     }
 
     function addMarker(o) {
@@ -257,9 +277,9 @@
         marker.openPopup();
 
         marker.on('dragend', function(e) {
-            marker.setPopupContent('New Location');
             geoCoords.x = e.target._latlng.lat;
             geoCoords.y = e.target._latlng.lng;
+            marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
             geoUpdateUI(geoCoords);
             removeFence(fence);
             markerMoved = true;
@@ -274,7 +294,7 @@
       if (wallState) {
         try {
             wall.destroy();
-            $('#geo').after('<main id="app"></main>');
+            $('#map').after('<main id="app"></main>');
         } catch (e) { }
       }
       Livefyre.require([
@@ -287,7 +307,7 @@
 
               var appEl = document.getElementById('app');
               var geoCollection = new(GeoCollection.GeoCollection)({
-                  collection: cidsWeatherCollection,
+                  collection: bensCollection,
                   geometry: geometry,
                   transformState: function stateToContent(state) {
                       var contents = SDK.StateToContent.transform(state);
@@ -306,33 +326,13 @@
           });
       wallState = true;
     }
-    function createControls() {
-        var formHTML = '<form class="form-inline" role="form" id="radius-form"><div class="form-group"><label for="distance"></label><input class="" value="" id="distance" placeholder="Radial Min: 0.1" /><select id="units"><option value="mi">mi</option><option value="km">km</option></select><button type="submit" class="btn" id="submit-radius">Create Fence</button></div></form>';
-
-
-        var geoInput = L.Control.extend({
-            initialize: function (foo, options) {
-                L.Util.setOptions(this, options);
-            },
-            onAdd: function (map) {
-                // create the control container with a particular class name
-                var container = L.DomUtil.create('div', 'geo-input-control');
-
-                // ... initialize other DOM elements, add listeners, etc.
-                return container;
-            }
-        });
-
-        map.addControl(new geoInput());
-
-    }
 
     function createPoly(geoCoords, addFence, renderMediawall) {
 
         var radiusInMeters, validInput, angleDegrees;
 
         distance = parseFloat($('#distance').val(), 10);
-        distance = (distance > 0) ? distance : parseFloat('10', 10);
+        distance = (distance > 0) ? distance : parseFloat('.1', 10);
         unitType = $('#units').val();
 
         radiusInMeters = convertDistanceToMeters(distance, unitType);
@@ -348,6 +348,7 @@
             renderMediawall(geometry);
             validateGeoJSON(geometry);
             $('#distance').val(distance);
+            $('#submit-radius').text('Update');
         }
 
         function validateDistance(r) {
@@ -416,21 +417,19 @@
         }
     }
 
-    $('#distance').focus(function() {
-        $(this).val('');
-    });
-
     $('body').on('click', '.quick', function(e) {
         var $el = $(e.target);
-        var text = $el.data('city');
         geoCoords.x = parseFloat($el.data('lat'));
         geoCoords.y = parseFloat($el.data('lng'));
-        mapSetView(geoCoords, text, addFence, renderMediawall);
+        mapSetView(geoCoords, addFence, renderMediawall);
     });
     $('#radius-form').submit(function(e) {
         e.preventDefault();
         $('.error').text('');
-        $('#submit-radius').text('Update Geo Fenced Media Wall');
+        if (fenceState) {
+            removeFence(fence);
+        }
+        createPoly(geoCoords, addFence, renderMediawall);
     });
 
     mapInit(geoCoords);
