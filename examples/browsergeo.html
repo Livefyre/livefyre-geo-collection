@@ -493,15 +493,23 @@
 
     $('body').on('click', '#default-values', function (e) {
         e.preventDefault();
+
         if (fence.state) {
             removeFence(fence);
         }
+        $(this).addClass('active');
         updateCollectionDeets(defaultData);
         createPoly(geoCoords, addFence, renderMediawall);
     });
 
     $('body').on('click', '.quick', function(e) {
         var $el = $(e.target);
+        if ($el.hasClass('active')) {
+            return;
+        }
+        $el.addClass('active');
+        $el.siblings('button').removeClass('active');
+
         geoCoords.x = parseFloat($el.data('lat'));
         geoCoords.y = parseFloat($el.data('lng'));
         mapSetView(geoCoords, addFence, renderMediawall);

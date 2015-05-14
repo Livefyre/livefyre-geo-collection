@@ -113,7 +113,8 @@
             word-spacing: normal;
         }
 
-        button:hover {
+        button:hover,
+        button.active {
         background-color: #FF7967;
         }
 
