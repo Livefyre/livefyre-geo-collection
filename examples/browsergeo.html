@@ -35,7 +35,7 @@
             <div class="sidebar-pane active" id="home">
                 <h2>How to Geo Fence Content</h2>
                 <p>Use the icons to the left or adjust the Marker <i class="fa fa-map-marker"></i> on the map to get started. If no distance is set in the Settings section <i class="fa fa-gear"></i> a geo fence radial distance of 0.25 </span> will be applied. You can manually move the geo fence by dragging the Marker on the map.</p>
-                <p>If you've created a fence and don't see any content in your Media Wall, it's probably because there is no content in your Collection within your fence perimeter. Try moving the Marker or making your fence larger and see what happens (also, check that your Network, longitude and latitude settings are correct ;-)</p>
+                <p>If you've created a fence and don't see any content below in your App, it's probably because there is no content in your Collection within your fence perimeter. Try moving the Marker or making your fence larger and see what happens (also, check that your Network, longitude and latitude settings are correct ;-)</p>
                 <p><a href="http://docs.livefyregeotileapi.apiary.io/#reference">API</a></p>
                 <p><a href="https://www.npmjs.com/package/livefyre-geo-collection">NPM</a></p>
             </div>
@@ -228,7 +228,6 @@
         marker.setLatLng(latlng);
         marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
         markerMoved = true;
-        checkFenceState(fence);
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
         createPoly(geoCoords, renderMediawall);
@@ -259,10 +258,6 @@
         }).addTo(map);
 
         map.addControl(zoomControl);
-
-        // map.on('viewreset', function (e) {
-        //     console.log('resetView', e);
-        // });
 
         map.on('load', function(e) {
 
@@ -358,7 +353,6 @@
             marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
             geoMarkerCoordsUI(geoCoords);
             updateSettingsGeoInputs(geoCoords);
-            checkFenceState(fence);
             createPoly(geoCoords, renderMediawall);
             markerMoved = true;
         });
@@ -412,7 +406,6 @@
     function createPoly(geoCoords, renderMediawall) {
 
         var radiusInMeters, validInput, angleDegrees;
-
         fence.distance = parseFloat($('#distance').val(), 10);
         fence.distance = (fence.distance > 0) ? fence.distance : parseFloat('.25', 10);
         fence.unitType = updateUnitType();
@@ -423,6 +416,7 @@
         if (!validInput) {
             $('.error').text('Those numbers are out of range. Try again.');
         } else {
+            checkFenceState(fence);
             angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
             geometry = createPolydata(angleDegrees, geoCoords);
             addFence(geometry);
@@ -505,7 +499,6 @@
         var $el = $(e.target);
         if ($el.is(":checked")) {
             updateCollectionDeets(defaultData);
-            checkFenceState(fence);
             createPoly(geoCoords, renderMediawall);
         } else {
             wipeInputDeets();
@@ -534,7 +527,6 @@
         $('.error').text('');
         $('.quick').removeClass('active');
         updateCollectionDeets();
-        checkFenceState(fence);
 
         if (!isNaN(lng) && !isNaN(lat)) {
             geoCoords.x = lat;
