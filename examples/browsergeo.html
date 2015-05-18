@@ -430,7 +430,7 @@
 
         function validateDistance(r) {
             var MAX = 3220290; // ~2000 miles
-            var MIN = parseFloat('.1');
+            var MIN = parseFloat('.1', 10);
             return (r < MAX && r > MIN) ? true : false;
         }
 
