@@ -66,13 +66,14 @@
                         <input class="" value="" id="marker-lng" placeholder="decimal format" />
                         </div>
                         <div>
-                        <label for="distance">Fence Radius: </label>
-                        <select id="units">
-                            <option value="mi">mi</option>
-                            <option value="km">km</option>
-                        </select>
-                        <input class="" value="" id="distance" placeholder="0.1" />
+                            <label for="distance">Fence Radius: </label>
+                            <select id="units">
+                                <option value="mi">mi</option>
+                                <option value="km">km</option>
+                            </select>
+                            <input class="" value="" id="distance" placeholder="0.1 – 2000" />
                         </div>
+                        <p class="error"></p>
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn" id="submit-radius">
@@ -80,7 +81,6 @@
                         </button>
                     </div>
                 </form>
-                <p class="error"></p>
             </div>
             <div class="sidebar-pane" id="profile">
                 <h2>Marker Coordinates</h2>
@@ -268,6 +268,7 @@
         map.on('load', function(e) {
 
             var center = map.getCenter();
+            var sidebar = L.control.sidebar('sidebar').addTo(map);
 
             geoCoords.x = center.lat;
             geoCoords.y = center.lng;
@@ -281,7 +282,6 @@
             addMarker(center);
             updateSidebarMarkerView(geoCoords);
             updateSettingsGeoInputs(geoCoords);
-            var sidebar = L.control.sidebar('sidebar').addTo(map);
 
         });
 
@@ -290,11 +290,6 @@
             geoCoords.z = currentZ;
             $('#js-your-zoom > span').text(currentZ);
         });
-
-        map.on('click', function(e) {
-
-        });
-
 
     }
 
@@ -363,11 +358,8 @@
             geoMarkerCoordsUI(geoCoords);
             updateSettingsGeoInputs(geoCoords);
             removeFence(fence);
-            markerMoved = true;
             createPoly(geoCoords, addFence, renderMediawall);
-        });
-        marker.on('dragstart', function(e) {
-
+            markerMoved = true;
         });
     }
 
