@@ -41,9 +41,8 @@
                 <h2>Collection Settings</h2>
                 <form class="form-inline" role="form" id="radius-form">
                     <div class="form-group">
-                        <button class="btn" id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827">
-                            Default Network Settings
-                        </button>
+                        <label for="default-values">Use Defaults: </label>
+                        <input  id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827" type="checkbox" name="defualts" value="true">
                         <div>
                         <label for="network">Network: </label>
                         <input class="" value="" id="network" placeholder="xxxxxx.fyre.co" />
@@ -188,6 +187,7 @@
         }
 
         if (local.avaialable) {
+            console.log('update, calling setStorage');
             local.setStorage('collectionDetails', collectionDetails);
         }
     }
@@ -196,11 +196,13 @@
         avaialable: false,
         getStorage: function (k) {
             var vObj = JSON.parse(window.localStorage.getItem(k));
+            console.log(vObj);
             return vObj;
         },
         setStorage: function (k, v) {
             var vStr = JSON.stringify(v);
             window.localStorage.setItem(k, vStr);
+            console.log(k, vStr);
         },
         checkStorage: function() {
             this.avaialable = (window.localStorage) ?  true : false;
@@ -213,6 +215,12 @@
         $('#article-id').val(collectionDetails.articleId);
         $('#site-id').val(collectionDetails.siteId);
         updateSettingsGeoInputs(geoCoords);
+    }
+
+    function wipeInputDeets(collectionDetails) {
+        $('#network').val('');
+        $('#article-id').val('');
+        $('#site-id').val('');
     }
 
     function mapSetView(geoCoords, addFence, renderMediawall) {
@@ -499,11 +507,17 @@
         }
     }
 
-    $('body').on('click', '#default-values', function (e) {
+    $('body').on('change', '#default-values', function (e) {
         e.preventDefault();
-        updateCollectionDeets(defaultData);
-        checkFenceState(fence);
-        createPoly(geoCoords, addFence, renderMediawall);
+        var $el = $(e.target);
+        if ($el.is(":checked")) {
+            updateCollectionDeets(defaultData);
+            checkFenceState(fence);
+            createPoly(geoCoords, addFence, renderMediawall);
+        } else {
+            wipeInputDeets();
+            updateCollectionDeets();
+        }
     });
 
     $('body').on('click', '.quick', function(e) {
@@ -536,13 +550,12 @@
         createPoly(geoCoords, addFence, renderMediawall);
     });
 
-    if (local.checkStorage()) {
-        if (local.getStorage('collectionDetails') && local.getStorage('collectionDetails') !== '') {
-            applyInputDeets(local.getStorage('collectionDetails'));
-        }
-    }
-
     $(document).ready(function () {
+        if (local.checkStorage()) {
+            if (local.getStorage('collectionDetails') && local.getStorage('collectionDetails') !== '') {
+                applyInputDeets(local.getStorage('collectionDetails'));
+            }
+        }
         mapInit(geoCoords);
     });
 
