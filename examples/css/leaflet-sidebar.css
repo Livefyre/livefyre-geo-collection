@@ -25,6 +25,10 @@
     width: 40px;
 }
 
+.sidebar ul {
+    padding-left: 0;
+}
+
 @media (min-width: 768px) {
     .sidebar {
         left: 10px;

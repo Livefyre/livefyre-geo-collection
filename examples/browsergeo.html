@@ -36,6 +36,8 @@
                 <h2>How to Geo Fence Content</h2>
                 <p>Use the icons to the left or adjust the Marker <i class="fa fa-map-marker"></i> on the map to get started. If no distance is set in the Settings section <i class="fa fa-gear"></i> a geo fence radial distance of 0.25 </span> will be applied. You can manually move the geo fence by dragging the Marker on the map.</p>
                 <p>If you've created a fence and don't see any content in your Media Wall, it's probably because there is no content in your Collection within your fence perimeter. Try moving the Marker or making your fence larger and see what happens (also, check that your Network, longitude and latitude settings are correct ;-)</p>
+                <p><a href="http://docs.livefyregeotileapi.apiary.io/#reference">API</a></p>
+                <p><a href="https://www.npmjs.com/package/livefyre-geo-collection">NPM</a></p>
             </div>
             <div class="sidebar-pane" id="settings">
                 <h2>Collection Settings</h2>
@@ -187,7 +189,6 @@
         }
 
         if (local.avaialable) {
-            console.log('update, calling setStorage');
             local.setStorage('collectionDetails', collectionDetails);
         }
     }
@@ -196,13 +197,11 @@
         avaialable: false,
         getStorage: function (k) {
             var vObj = JSON.parse(window.localStorage.getItem(k));
-            console.log(vObj);
             return vObj;
         },
         setStorage: function (k, v) {
             var vStr = JSON.stringify(v);
             window.localStorage.setItem(k, vStr);
-            console.log(k, vStr);
         },
         checkStorage: function() {
             this.avaialable = (window.localStorage) ?  true : false;
@@ -223,7 +222,7 @@
         $('#site-id').val('');
     }
 
-    function mapSetView(geoCoords, addFence, renderMediawall) {
+    function mapSetView(geoCoords, renderMediawall) {
         var latlng = L.latLng(geoCoords.x, geoCoords.y);
         map.setView(latlng);
         marker.setLatLng(latlng);
@@ -232,7 +231,7 @@
         checkFenceState(fence);
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
-        createPoly(geoCoords, addFence, renderMediawall);
+        createPoly(geoCoords, renderMediawall);
         //map.fireEvent('viewreset');
     }
 
@@ -246,6 +245,13 @@
             position: 'topright'
         });
 
+        map.locate({
+            setView: true,
+            maxZoom: 15,
+            enableHighAccuracy: true,
+            maximumAge: 59999.9
+        });
+
         L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
             attribution: 'Livefyre Geo Maps',
             reuseTiles: true,
@@ -254,21 +260,13 @@
 
         map.addControl(zoomControl);
 
-        map.locate({
-            setView: true,
-            maxZoom: 15,
-            enableHighAccuracy: true,
-            maximumAge: 59999.9
-        });
-
-        map.on('viewreset', function (e) {
-            console.log(e);
-        });
+        // map.on('viewreset', function (e) {
+        //     console.log('resetView', e);
+        // });
 
         map.on('load', function(e) {
 
             var center = map.getCenter();
-            var sidebar = L.control.sidebar('sidebar').addTo(map);
 
             geoCoords.x = center.lat;
             geoCoords.y = center.lng;
@@ -282,6 +280,8 @@
             addMarker(center);
             updateSidebarMarkerView(geoCoords);
             updateSettingsGeoInputs(geoCoords);
+
+            var sidebar = L.control.sidebar('sidebar').addTo(map);
 
         });
 
@@ -303,6 +303,7 @@
             removeFence(fence);
         }
     }
+
     function addFence(geometry) {
       fence.state = true;
       fence.el = L.geoJson(geometry, {
@@ -357,8 +358,8 @@
             marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
             geoMarkerCoordsUI(geoCoords);
             updateSettingsGeoInputs(geoCoords);
-            removeFence(fence);
-            createPoly(geoCoords, addFence, renderMediawall);
+            checkFenceState(fence);
+            createPoly(geoCoords, renderMediawall);
             markerMoved = true;
         });
     }
@@ -408,7 +409,7 @@
       wall.state = true;
     }
 
-    function createPoly(geoCoords, addFence, renderMediawall) {
+    function createPoly(geoCoords, renderMediawall) {
 
         var radiusInMeters, validInput, angleDegrees;
 
@@ -505,7 +506,7 @@
         if ($el.is(":checked")) {
             updateCollectionDeets(defaultData);
             checkFenceState(fence);
-            createPoly(geoCoords, addFence, renderMediawall);
+            createPoly(geoCoords, renderMediawall);
         } else {
             wipeInputDeets();
             updateCollectionDeets();
@@ -522,7 +523,7 @@
         $('#distance').val(10);
         geoCoords.x = parseFloat($el.data('lat'));
         geoCoords.y = parseFloat($el.data('lng'));
-        mapSetView(geoCoords, addFence, renderMediawall);
+        mapSetView(geoCoords, renderMediawall);
     });
 
     $('#radius-form').submit(function(e) {
@@ -539,7 +540,7 @@
             geoCoords.x = lat;
             geoCoords.y = lng;
         }
-        createPoly(geoCoords, addFence, renderMediawall);
+        createPoly(geoCoords, renderMediawall);
     });
 
     $(document).ready(function () {
