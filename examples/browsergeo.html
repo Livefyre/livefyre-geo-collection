@@ -9,6 +9,7 @@
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
     <link rel="stylesheet" href="css/leaflet-sidebar.css" />
+    <link rel="stylesheet" href="css/leaflet.draw.css" />
     <script src="http://client-solutions.livefyre.com/cid/maps/modernizr-geo.js"></script>
     <script>
     // Polly Fill if browser doesn't support geo
@@ -115,6 +116,7 @@
     <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
     <script src="js/leaflet-sidebar.min.js"></script>
+    <script src="js/leaflet.draw.js"></script>
     <script src="https://cdn.livefyre.com/Livefyre.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
     <script>
@@ -234,6 +236,54 @@
         //map.fireEvent('viewreset');
     }
 
+    function drawInit() {
+        // Initialise the FeatureGroup to store editable layers
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        // Initialise the draw control and pass it the FeatureGroup of editable layers
+        var options = {
+            position: 'bottomright',
+            draw: {
+                polyline: {
+                    shapeOptions: {
+                        color: '#f357a1',
+                        weight: 10
+                    }
+                },
+                polygon: false,
+                circle: {
+                    shapeOptions: {
+                        clickable: false
+                    }
+                },
+                rectangle: {
+                    shapeOptions: {
+                        clickable: true
+                    }
+                },
+                marker: false
+            },
+            edit: {
+                featureGroup: drawnItems //REQUIRED!!
+            }
+        };
+        var drawControl = new L.Control.Draw(options);
+        map.addControl(drawControl);
+
+        map.on('draw:created', function (e) {
+            var type = e.layerType,
+                layer = e.layer;
+                console.dir(e);
+            if (type === 'marker') {
+                layer.bindPopup('A popup!');
+            }
+
+            drawnItems.addLayer(layer);
+        });
+
+    }
+
     function mapInit(geoCoords) {
 
         var map = window.map = L.map('map', {
@@ -258,6 +308,7 @@
         }).addTo(map);
 
         map.addControl(zoomControl);
+        drawInit();
 
         map.on('load', function(e) {
 
