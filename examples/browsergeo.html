@@ -44,7 +44,7 @@
                 <h2>Collection Settings</h2>
                 <form class="form-inline" role="form" id="radius-form">
                     <div class="form-group">
-                        <label for="default-values">Use Defaults: </label>
+                        <label for="default-values">Default Network: </label>
                         <input  id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827" type="checkbox" name="defualts-values" value="true">
                         <div>
                         <label for="network">Network: </label>
@@ -618,13 +618,12 @@
             updateCollectionDeets(defaultData);
             createPoly(geoCoords);
             $el.attr('checked', true);
-            $('#perfect-circle').prop('checked', true);
         } else {
             wipeInputDeets();
             updateCollectionDeets();
-            $el.removeAttr('checked');
         }
     });
+
 
     $('body').on('change', '#perfect-circle', function (e) {
         e.preventDefault();
