@@ -274,6 +274,7 @@
         map.on('draw:created', function (e) {
             var type = e.layerType,
                 layer = e.layer;
+                window.eve = e;
                 console.dir(e);
             if (type === 'marker') {
                 layer.bindPopup('A popup!');
