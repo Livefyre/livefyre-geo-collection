@@ -45,21 +45,23 @@
                 <form class="form-inline" role="form" id="radius-form">
                     <div class="form-group">
                         <label for="default-values">Use Defaults: </label>
-                        <input  id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827" type="checkbox" name="defualts" value="true">
+                        <input  id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827" type="checkbox" name="defualts-values" value="true">
                         <div>
                         <label for="network">Network: </label>
-                        <input class="" value="" id="network" placeholder="xxxxxx.fyre.co" />
+                        <input class="" value="" name="network" id="network" placeholder="xxxxxx.fyre.co" />
                         </div>
                         <div>
                         <label for="site-id">SiteId: </label>
-                        <input class="" value="" id="site-id" placeholder="xxxxxx" />
+                        <input class="" value="" name="site-id" id="site-id" placeholder="xxxxxx" />
                         </div>
                         <div>
                         <label for="article-id">ArticleId: </label>
-                        <input class="" value="" id="article-id" placeholder="custom-xxxxxxxxxxxxx" />
+                        <input class="" value="" name="article-id" id="article-id" placeholder="custom-xxxxxxxxxxxxx" />
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="perfect-circle">Draw Fence: </label>
+                        <input  id="perfect-circle" type="checkbox" name="perfect-circle" value="">
                         <div>
                         <label for="marker-lat">Marker Lat: </label>
                         <input class="" value="" id="marker-lat" placeholder="decimal format" />
@@ -73,6 +75,7 @@
                             <select id="units">
                                 <option value="mi">mi</option>
                                 <option value="km">km</option>
+                                <option value="m">m</option>
                             </select>
                             <input class="" value="" id="distance" placeholder="0.1 – 2000" />
                         </div>
@@ -132,6 +135,7 @@
     var markerMoved = false;
     var marker = null;
     var map = null;
+    var drawnItems = null;
 
     var wall = {
         state: null,
@@ -148,7 +152,8 @@
         state: false,
         el: null,
         distance: null,
-        unitType: ''
+        unitType: '',
+        polyType: ''
     };
 
     var defaultData = $('#default-values').data();
@@ -215,6 +220,7 @@
         $('#network').val(collectionDetails.network);
         $('#article-id').val(collectionDetails.articleId);
         $('#site-id').val(collectionDetails.siteId);
+        (collectionDetails.articleId === 'uat-ben-geo-0') ? $('#default-values').attr('checked', true) : $('#default-values').attr('checked', false);
         updateSettingsGeoInputs(geoCoords);
     }
 
@@ -224,7 +230,7 @@
         $('#site-id').val('');
     }
 
-    function mapSetView(geoCoords, renderMediawall) {
+    function mapSetView(geoCoords) {
         var latlng = L.latLng(geoCoords.x, geoCoords.y);
         map.setView(latlng);
         marker.setLatLng(latlng);
@@ -232,20 +238,26 @@
         markerMoved = true;
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
-        createPoly(geoCoords, renderMediawall);
-        //map.fireEvent('viewreset');
+        createPoly(geoCoords);
     }
 
-    function drawInit() {
+    function drawClear(drawnItems) {
+        try {
+            drawnItems.clearLayers();
+        } catch (e) {}
+    }
+
+    function drawInit(cb) {
         // Initialise the FeatureGroup to store editable layers
-        var drawnItems = new L.FeatureGroup();
+        drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
         // Initialise the draw control and pass it the FeatureGroup of editable layers
         var options = {
-            position: 'bottomright',
+            position: 'topleft',
             draw: {
                 polyline: {
+                    allowIntersection: false,
                     shapeOptions: {
                         color: '#f357a1',
                         weight: 10
@@ -257,30 +269,57 @@
                         clickable: false
                     }
                 },
-                rectangle: {
-                    shapeOptions: {
-                        clickable: true
-                    }
-                },
+                rectangle: false,
                 marker: false
             },
             edit: {
-                featureGroup: drawnItems //REQUIRED!!
+                featureGroup: drawnItems, //REQUIRED!!
+                remove: false
             }
         };
+
         var drawControl = new L.Control.Draw(options);
         map.addControl(drawControl);
 
+        map.on('draw:drawstart', function (e) {
+            // only allow one layer at a time
+            drawClear(drawnItems);
+
+        });
+
         map.on('draw:created', function (e) {
+            console.log('creatded');
+
             var type = e.layerType,
-                layer = e.layer;
-                window.eve = e;
-                console.dir(e);
-            if (type === 'marker') {
-                layer.bindPopup('A popup!');
+                layersGeoJSON = null,
+                layer = e.layer,
+                feature = null;
+
+            // add Layer to Control Group
+            drawnItems.addLayer(layer);
+
+            if (type === 'circle') {
+                // Explicitly use Meters
+                fence.unitType = 'm';
+                // update view
+                unitType.set(fence.unitType);
+
+                fence.polyType = type;
+                fence.distance = layer._mRadius;
+
+                geoCoords.x = layer._latlng.lat;
+                geoCoords.y = layer._latlng.lng;
+
+                layersGeoJSON = drawnItems.toGeoJSON();
+                geometry = layersGeoJSON.features[0].geometry;
+                markerUpdate();
+                createPoly(geoCoords, fence.distance);
+
+            } else if (type === 'polyline') {
+
+                //console.dir(e);
             }
 
-            drawnItems.addLayer(layer);
         });
 
     }
@@ -324,7 +363,7 @@
                 'lng': geoCoords.y
             });
 
-            addMarker(center);
+            markerAdd(center);
             updateSidebarMarkerView(geoCoords);
             updateSettingsGeoInputs(geoCoords);
 
@@ -340,10 +379,16 @@
 
     }
 
-    function updateUnitType() {
-        fence.unitType = $('#units').val();
-        return fence.unitType;
-    }
+    var unitType = {
+        set: function (val) {
+            $('#units').val(val);
+            return fence.unitType;
+        },
+        get: function () {
+            fence.unitType = $('#units').val();
+            return fence.unitType;
+        }
+    };
 
     function checkFenceState (fence) {
         if (fence.state) {
@@ -360,7 +405,7 @@
               };
           },
           onEachFeature: function(feature, layer) {
-              layer.bindPopup('The diameter of your fence is <br /> ' + (fence.distance * 2) +' ' + updateUnitType() + '.');
+              layer.bindPopup('The diameter of your fence is <br /> ' + (fence.distance * 2) +' ' + unitType.get() + '.');
           }
       });
       map.addLayer(fence.el);
@@ -390,7 +435,13 @@
         marker.setLatLng(latlng);
     }
 
-    function addMarker(o) {
+    function markerUpdate() {
+        marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
+        geoMarkerCoordsUI(geoCoords);
+        updateSettingsGeoInputs(geoCoords);
+    }
+
+    function markerAdd(o) {
         marker = L.marker([o.lat, o.lng], {
             draggable: true
         });
@@ -399,14 +450,13 @@
         marker.bindPopup('Found you!');
         marker.openPopup();
 
-        marker.on('dragend', function(e) {
+        marker.on('dragend', function (e) {
+            markerMoved = true;
+            drawClear(drawnItems);
             geoCoords.x = e.target._latlng.lat;
             geoCoords.y = e.target._latlng.lng;
-            marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
-            geoMarkerCoordsUI(geoCoords);
-            updateSettingsGeoInputs(geoCoords);
-            createPoly(geoCoords, renderMediawall);
-            markerMoved = true;
+            markerUpdate();
+            createPoly(geoCoords);
         });
     }
 
@@ -448,48 +498,61 @@
                   el: appEl,
                   collection: geoCollection
               });
+
             if (local.avaialable) {
                 local.setStorage('collectionDetails', collectionDetails);
             }
+
           });
       wall.state = true;
     }
 
-    function createPoly(geoCoords, renderMediawall) {
+    function createPoly(geoCoords, distance) {
 
-        var radiusInMeters, validInput, angleDegrees;
-        fence.distance = parseFloat($('#distance').val(), 10);
-        fence.distance = (fence.distance > 0) ? fence.distance : parseFloat('.25', 10);
-        fence.unitType = updateUnitType();
+        checkFenceState(fence);
 
-        radiusInMeters = convertDistanceToMeters(fence);
-        validInput = validateDistance(radiusInMeters);
+        if (fence.polyType === 'circle') {
 
-        if (!validInput) {
-            $('.error').text('Those numbers are out of range. Try again.');
-        } else {
-            checkFenceState(fence);
-            angleDegrees = angularRadiusFromSurfaceRadius(radiusInMeters);
-            geometry = createPolydata(angleDegrees, geoCoords);
-            addFence(geometry);
-            moveMarker(geoCoords)
-            geoCoords.z = map.getZoom();
-            renderMediawall(geometry);
-            validateGeoJSON(geometry);
-            $('#distance').val(fence.distance);
-            $('#submit-radius').text('Update Fence');
+            var radiusInMeters, validInput, angleDegrees;
+
+            fence.distance = distance || parseFloat($('#distance').val(), 10);
+            fence.distance = (fence.distance > 0) ? fence.distance : parseFloat('.25', 10);
+
+            radiusInMeters = _convertDistanceToMeters(fence);
+            validInput = _validateDistance(radiusInMeters);
+
+            console.log(radiusInMeters, validInput, angleDegrees);
+            if (!validInput) {
+                $('.error').text('Those numbers are out of range. Try again.');
+            } else {
+                angleDegrees = _angularRadiusFromSurfaceRadius(radiusInMeters);
+                geometry = _createPolyCircle(angleDegrees, geoCoords);
+                addFence(geometry);
+                geoCoords.z = map.getZoom();
+                moveMarker(geoCoords);
+                setTimeout(function () {
+                    renderMediawall(geometry);
+                }, 10)
+
+                _validateGeoJSON(geometry);
+                $('#distance').val(fence.distance);
+                $('#perfect-circle').attr('checked', true);
+                $('#submit-radius').text('Update Fence');
+            }
         }
 
-        function validateDistance(r) {
+        function _validateDistance(r) {
             var MAX = 3220290; // ~2000 miles
             var MIN = parseFloat('.1', 10);
             return (r < MAX && r > MIN) ? true : false;
         }
 
 
-        function convertDistanceToMeters(fence) {
+        function _convertDistanceToMeters(fence) {
             var distMeters;
-            if (fence.unitType === 'km') {
+            if (fence.unitType === 'm') {
+                distMeters = fence.distance;
+            } else if (fence.unitType === 'km') {
                 distMeters = fence.distance * 1000;
             } else if (fence.unitType === 'mi') {
                 distMeters = fence.distance * 1609.34;
@@ -497,19 +560,19 @@
             return distMeters;
         }
 
-        function angularRadiusFromSurfaceRadius(surfaceRadius) {
+        function _angularRadiusFromSurfaceRadius(surfaceRadius) {
             var DISTANCE_TO_CENTER_OF_EARTH_METERS = 6371000;
             var angle = ((surfaceRadius / DISTANCE_TO_CENTER_OF_EARTH_METERS * 180)) / Math.PI;
             return angle;
         }
 
-        function createPolydata(angle, geoCoords) {
+        function _createPolyCircle(angle, geoCoords) {
             return d3.geo.circle()
               .origin([geoCoords.y, geoCoords.x])
               .angle(angle).precision(1)();
         }
 
-        function validateGeoJSON(geometry) {
+        function _validateGeoJSON(geometry) {
             var processSuccess, processError, geoJSON;
             geoJSON = {
                 type: "FeatureCollection",
@@ -546,16 +609,27 @@
         }
     }
 
+    // Click Handlers
     $('body').on('change', '#default-values', function (e) {
         e.preventDefault();
         var $el = $(e.target);
         if ($el.is(":checked")) {
             updateCollectionDeets(defaultData);
-            createPoly(geoCoords, renderMediawall);
+            createPoly(geoCoords);
+            $el.attr('checked', true);
+            $('#perfect-circle').prop('checked', true);
         } else {
             wipeInputDeets();
             updateCollectionDeets();
+            $el.removeAttr('checked');
         }
+    });
+
+    $('body').on('change', '#perfect-circle', function (e) {
+        e.preventDefault();
+        var $el = $(e.target);
+        var $drawEl = $('.leaflet-draw');
+        ($el.is(":checked")) ?  $drawEl.fadeIn() : $drawEl.fadeOut();
     });
 
     $('body').on('click', '.quick', function(e) {
@@ -568,7 +642,7 @@
         $('#distance').val(10);
         geoCoords.x = parseFloat($el.data('lat'));
         geoCoords.y = parseFloat($el.data('lng'));
-        mapSetView(geoCoords, renderMediawall);
+        mapSetView(geoCoords);
     });
 
     $('#radius-form').submit(function(e) {
@@ -584,7 +658,7 @@
             geoCoords.x = lat;
             geoCoords.y = lng;
         }
-        createPoly(geoCoords, renderMediawall);
+        createPoly(geoCoords);
     });
 
     $(document).ready(function () {
