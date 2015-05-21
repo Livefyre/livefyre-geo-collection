@@ -274,21 +274,29 @@
             },
             edit: {
                 featureGroup: drawnItems, //REQUIRED!!
-                remove: false,
-                edit: false
+                remove: false
             }
         };
 
         var drawControl = new L.Control.Draw(options);
         map.addControl(drawControl);
+        // Event Handlers
+        // Most have draw:event<start|stop>
 
         map.on('draw:drawstart', function (e) {
+            console.log('draw:drawstart');
             // only allow one layer at a time
+        });
+
+        map.on('draw:edited', function (e) {
+            console.log('draw:edited', e);
             drawClear(drawnItems);
+
         });
 
         map.on('draw:created', function (e) {
-
+            console.log('draw:created');
+            // TODO - Refactor and get shit out of here.
             var type = e.layerType,
                 layersGeoJSON = null,
                 layer = e.layer,
