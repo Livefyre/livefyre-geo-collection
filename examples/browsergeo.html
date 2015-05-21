@@ -221,7 +221,7 @@
         $('#article-id').val(collectionDetails.articleId);
         $('#site-id').val(collectionDetails.siteId);
         (collectionDetails.articleId === 'uat-ben-geo-0') ? $('#default-values').attr('checked', true) : $('#default-values').attr('checked', false);
-        updateSettingsGeoInputs(geoCoords);
+        //updateSettingsGeoInputs(geoCoords);
     }
 
     function wipeInputDeets(collectionDetails) {
@@ -474,6 +474,7 @@
     }
 
     function updateSettingsGeoInputs(geoCoords) {
+        console.log(geoCoords);
         $('#marker-lng').val(geoCoords.y);
         $('#marker-lat').val(geoCoords.x);
     }
@@ -690,7 +691,6 @@
         var $el = $(e.target);
         if ($el.is(":checked")) {
             updateCollectionDeets(defaultData);
-            createPoly(geoCoords);
             $el.attr('checked', true);
         } else {
             wipeInputDeets();
