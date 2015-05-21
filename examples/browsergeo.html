@@ -67,7 +67,7 @@
                 </form>
                 <form class="form-inline" role="form" id="radius-form">
                     <div class="form-group">
-                        <label for="perfect-circle">Draw Fence: </label>
+                        <label for="perfect-circle">Custom Fence: </label>
                         <input  id="perfect-circle" type="checkbox" name="perfect-circle" value="">
                         <div>
                         <label for="marker-lat">Marker Lat: </label>
@@ -240,8 +240,8 @@
         var latlng = L.latLng(geoCoords.x, geoCoords.y);
         map.setView(latlng);
         marker.setLatLng(latlng);
-        marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
         markerMoved = true;
+        marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
         createPoly(geoCoords);
@@ -340,7 +340,7 @@
 
             // TODO redefine gemometry after successful edit. rendermedialwall
             // drawClear(drawnItems);
-            console.log(layer)
+
         });
 
 
@@ -372,7 +372,6 @@
                 // update view
                 updateGeoCoords(layer._latlng.lat, layer._latlng.lng);
                 createPoly(geoCoords, fence.distance);
-                //console.log($('#distance').val(currDistance), $('#units').val(oldUnitType));
                 $('#distance').val(currDistance);
                 $('#units').val(oldUnitType);
 
@@ -782,6 +781,7 @@
         $el.addClass('active');
         $el.siblings('button').removeClass('active');
         $('#distance').val(10);
+        unitType.set('mi');
         updateGeoCoords(parseFloat($el.data('lat')), parseFloat($el.data('lng')));
         mapSetView(geoCoords);
     });
