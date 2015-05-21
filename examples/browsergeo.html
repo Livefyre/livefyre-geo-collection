@@ -260,7 +260,8 @@
                     allowIntersection: false,
                     shapeOptions: {
                         color: '#f357a1',
-                        weight: 10
+                        weight: 12,
+                        stroke: false
                     }
                 },
                 polygon: false,
@@ -303,7 +304,6 @@
                 feature = null,
                 line_points = [];
 
-                window.layer = layer;
             // add Layer to Control Group
             drawnItems.addLayer(layer);
             layersGeoJSON = drawnItems.toGeoJSON();
@@ -470,12 +470,13 @@
         marker.openPopup();
 
         marker.on('dragend', function (e) {
-            markerMoved = true;
             drawClear(drawnItems);
+            fence.unitType = unitType.get();
             geoCoords.x = e.target._latlng.lat;
             geoCoords.y = e.target._latlng.lng;
             markerUpdate(geoCoords);
             createPoly(geoCoords);
+            markerMoved = true;
         });
     }
 
@@ -536,9 +537,13 @@
     function createPoly(geoCoords, distance) {
         console.log('create called');
         checkFenceState(fence);
-        console.dir(geometry);
         console.log(fence.polyType);
 
+        if (!fence.polyType) {
+            fence.polyType = 'circle';
+        }
+
+        console.log(fence.polyType);
         if (fence.polyType === 'circle') {
 
             var radiusInMeters, validInput, angleDegrees;
@@ -548,6 +553,7 @@
 
             radiusInMeters = _convertDistanceToMeters(fence);
             validInput = _validateDistance(radiusInMeters);
+            console.log(fence.distance, radiusInMeters, validInput);
 
             if (!validInput) {
                 $('.error').text('Those numbers are out of range. Try again.');
