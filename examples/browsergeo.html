@@ -152,7 +152,7 @@
         state: false,
         el: null,
         distance: null,
-        unitType: '',
+        unitType: 'mi',
         polyType: ''
     };
 
@@ -297,6 +297,8 @@
             var layersGeoJSON = drawnItems.toGeoJSON();
             var layer = e.layers._layers;
             var id = Object.keys(layer);
+            var oldUnitType;
+            var currDistance;
 
             geometry = layersGeoJSON.features[0].geometry;
             checkFenceState(fence);
@@ -304,12 +306,17 @@
             if (fence.polyType === 'circle') {
 
                 // Explicitly use Meters
-                unitType.set('m');
                 fence.distance = layer[id]._mRadius;
+                oldUnitType = unitType.get();
+                unitType.set('m');
+                currDistance = convertUnits(fence.distance, unitType.get(), oldUnitType);
 
                 // update view
                 updateGeoCoords(layer[id]._latlng.lat, layer[id]._latlng.lng);
                 createPoly(geoCoords, fence.distance);
+
+                $('#distance').val(currDistance);
+                $('#units').val(oldUnitType);
 
             } else if (fence.polyType === 'polyline') {
                 line_points = layer.getLatLngs();
@@ -338,7 +345,9 @@
                 layersGeoJSON = null,
                 layer = e.layer,
                 feature = null,
-                line_points = [];
+                line_points = [],
+                oldUnitType,
+                currDistance;
 
             // add Layer to Control Group
             drawnItems.addLayer(layer);
@@ -348,14 +357,18 @@
             fence.polyType = type;
 
             if (type === 'circle') {
-
                 // Explicitly use Meters
-                unitType.set('m');
                 fence.distance = layer._mRadius;
+                oldUnitType = unitType.get();
+                unitType.set('m');
+                currDistance = convertUnits(fence.distance, unitType.get(), oldUnitType);
 
                 // update view
                 updateGeoCoords(layer._latlng.lat, layer._latlng.lng);
                 createPoly(geoCoords, fence.distance);
+                //console.log($('#distance').val(currDistance), $('#units').val(oldUnitType));
+                $('#distance').val(currDistance);
+                $('#units').val(oldUnitType);
 
             } else if (type === 'polyline') {
                 line_points = layer.getLatLngs();
@@ -535,8 +548,6 @@
         geomArr = geometry.coordinates;
       }
 
-      console.log(fence.polyType, geometry);
-
       Livefyre.require([
               'streamhub-wall#3',
               'streamhub-sdk#2',
@@ -592,8 +603,7 @@
             fence.distance = (fence.distance >= parseFloat('.1', 10)) ? fence.distance : parseFloat('.125', 10);
 
 
-
-            radiusInMeters = _convertDistanceToMeters(fence);
+            radiusInMeters = convertUnits(fence.distance, fence.unitType, 'm');
             validInput = _validateDistance(radiusInMeters);
             console.log(fence.distance, fence.unitType, radiusInMeters, validInput);
 
@@ -623,18 +633,18 @@
         }
 
 
-        function _convertDistanceToMeters(fence) {
-            // TODO turn this into a utility function that can turn m<=>km, m<=>mi, mi<=>km
-            var distMeters;
-            if (fence.unitType === 'm') {
-                distMeters = fence.distance;
-            } else if (fence.unitType === 'km') {
-                distMeters = fence.distance * 1000;
-            } else if (fence.unitType === 'mi') {
-                distMeters = fence.distance * 1609.34;
-            }
-            return distMeters;
-        }
+        // function _convertDistance(fence) {
+        //     // TODO turn this into a utility function that can turn m<=>km, m<=>mi, mi<=>km
+        //     var distMeters;
+        //     if (fence.unitType === 'm') {
+        //         distMeters = fence.distance;
+        //     } else if (fence.unitType === 'km') {
+        //         distMeters = fence.distance * 1000;
+        //     } else if (fence.unitType === 'mi') {
+        //         distMeters = fence.distance * 1609.34;
+        //     }
+        //     return distMeters;
+        // }
 
         function _angularRadiusFromSurfaceRadius(surfaceRadius) {
             var DISTANCE_TO_CENTER_OF_EARTH_METERS = 6371000;
@@ -698,12 +708,52 @@
         }
     });
 
+    function convertUnits(val, from, to) {
+        var convertVal = 0;
+        if (from === to) {
+            convertVal = val;
+            return convertVal;
+        }
+
+        if (from === 'mi') {
+            if (to === 'm') {
+                convertVal = val * 1609.34;
+            } else if (to === 'km') {
+                convertVal = val * 1.60934;
+            }
+        } else if (from === 'km') {
+            if (to === 'mi') {
+                convertVal = val / 1.60934;
+            } else if (to === 'm') {
+                convertVal = val * 1000;
+            }
+        } else if (from === 'm') {
+            if (to === 'mi') {
+                convertVal = val / 1609.34;
+            } else if (to === 'km') {
+                convertVal = val / 1000;
+            }
+        }
+        return convertVal;
+
+    }
 
     $('body').on('change', '#perfect-circle', function (e) {
         e.preventDefault();
         var $el = $(e.target);
         var $drawEl = $('.leaflet-draw');
         ($el.is(":checked")) ?  $drawEl.fadeIn() : $drawEl.fadeOut();
+    });
+
+    $('body').on('change', '#units', function (e) {
+        e.preventDefault();
+        var $distEl = $('#distance');
+        var $el = $(e.target);
+        var $currVal = $el.val();
+        var convertedVal = convertUnits($distEl.val(), fence.unitType, $currVal);
+
+        $distEl.val(convertedVal);
+        fence.unitType = $el.val();
     });
 
     $('body').on('click', '.quick', function(e) {
