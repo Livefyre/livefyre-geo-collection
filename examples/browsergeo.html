@@ -285,41 +285,50 @@
         map.on('draw:drawstart', function (e) {
             // only allow one layer at a time
             drawClear(drawnItems);
-
         });
 
         map.on('draw:created', function (e) {
-            console.log('creatded');
 
             var type = e.layerType,
                 layersGeoJSON = null,
                 layer = e.layer,
-                feature = null;
+                feature = null,
+                line_points = [];
 
+                window.layer = layer;
             // add Layer to Control Group
             drawnItems.addLayer(layer);
+            layersGeoJSON = drawnItems.toGeoJSON();
+            geometry = layersGeoJSON.features[0].geometry
+
+            fence.polyType = type;
 
             if (type === 'circle') {
                 // Explicitly use Meters
                 fence.unitType = 'm';
+                fence.distance = layer._mRadius;
+
                 // update view
                 unitType.set(fence.unitType);
 
-                fence.polyType = type;
-                fence.distance = layer._mRadius;
-
                 geoCoords.x = layer._latlng.lat;
                 geoCoords.y = layer._latlng.lng;
-
-                layersGeoJSON = drawnItems.toGeoJSON();
-                geometry = layersGeoJSON.features[0].geometry;
-                markerUpdate();
                 createPoly(geoCoords, fence.distance);
 
             } else if (type === 'polyline') {
+                line_points = layer.getLatLngs();
+                var polyline = L.polygon(line_points).addTo(drawnItems);
 
-                //console.dir(e);
+                // Get middle latLng on polyline
+                var center = layer.getBounds().getCenter();
+                geoCoords.x = center.lat;
+                geoCoords.y = center.lng;
+
+                createPoly(geoCoords);
             }
+
+            moveMarker(geoCoords);
+            markerUpdate(geoCoords);
 
         });
 
@@ -436,7 +445,7 @@
         marker.setLatLng(latlng);
     }
 
-    function markerUpdate() {
+    function markerUpdate(geoCoords) {
         marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
@@ -456,7 +465,7 @@
             drawClear(drawnItems);
             geoCoords.x = e.target._latlng.lat;
             geoCoords.y = e.target._latlng.lng;
-            markerUpdate();
+            markerUpdate(geoCoords);
             createPoly(geoCoords);
         });
     }
@@ -484,7 +493,10 @@
               var appEl = document.getElementById('app');
               var geoCollection = new(GeoCollection.GeoCollection)({
                   collection: collectionDetails,
-                  geometry: geometry,
+                  geometry: {
+                    type: "Polygon",
+                    coordinates: geometry.coordinates
+                  },
                   transformState: function stateToContent(state) {
                       var contents = SDK.StateToContent.transform(state);
                       if (!(contents && contents.length)) {
@@ -511,7 +523,7 @@
     function createPoly(geoCoords, distance) {
 
         checkFenceState(fence);
-
+        console.dir(geometry);
         if (fence.polyType === 'circle') {
 
             var radiusInMeters, validInput, angleDegrees;
@@ -522,25 +534,26 @@
             radiusInMeters = _convertDistanceToMeters(fence);
             validInput = _validateDistance(radiusInMeters);
 
-            console.log(radiusInMeters, validInput, angleDegrees);
+            // console.log(radiusInMeters, validInput, angleDegrees);
             if (!validInput) {
                 $('.error').text('Those numbers are out of range. Try again.');
             } else {
                 angleDegrees = _angularRadiusFromSurfaceRadius(radiusInMeters);
                 geometry = _createPolyCircle(angleDegrees, geoCoords);
-                addFence(geometry);
-                geoCoords.z = map.getZoom();
-                moveMarker(geoCoords);
-                setTimeout(function () {
-                    renderMediawall(geometry);
-                }, 10)
-
-                _validateGeoJSON(geometry);
+                console.dir(geometry);
                 $('#distance').val(fence.distance);
-                $('#perfect-circle').attr('checked', true);
+//                $('#perfect-circle').attr('checked', true);
                 $('#submit-radius').text('Update Fence');
             }
+        } else if  (fence.polyType === 'polyline') {
+            //geometry = _createPolyGraticle(geometry);
+            console.dir(geometry);
         }
+
+        addFence(geometry);
+        geoCoords.z = map.getZoom();
+        renderMediawall(geometry);
+        _validateGeoJSON(geometry);
 
         function _validateDistance(r) {
             var MAX = 3220290; // ~2000 miles
