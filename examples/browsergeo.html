@@ -259,9 +259,8 @@
                 polyline: {
                     allowIntersection: false,
                     shapeOptions: {
-                        color: '#f357a1',
-                        weight: 12,
-                        stroke: false
+                        color: 'red',
+                        weight: 2
                     }
                 },
                 polygon: false,
@@ -285,14 +284,17 @@
         // Most have draw:event<start|stop>
 
         map.on('draw:drawstart', function (e) {
-            console.log('draw:drawstart');
             // only allow one layer at a time
+            drawClear(drawnItems);
         });
 
         map.on('draw:edited', function (e) {
-            console.log('draw:edited', e);
-            drawClear(drawnItems);
+            checkFenceState(fence);
+            var layer = e.layers._layers;
 
+            // TODO redefine gemometry after successful edit. rendermedialwall
+            // drawClear(drawnItems);
+            console.log(layer)
         });
 
         map.on('draw:created', function (e) {
@@ -319,9 +321,7 @@
 
                 // update view
                 unitType.set(fence.unitType);
-
-                geoCoords.x = layer._latlng.lat;
-                geoCoords.y = layer._latlng.lng;
+                updateGeoCoords(layer._latlng.lat, layer._latlng.lng);
                 createPoly(geoCoords, fence.distance);
 
             } else if (type === 'polyline') {
@@ -330,9 +330,8 @@
 
                 // Get middle latLng on polyline
                 var center = layer.getBounds().getCenter();
-                geoCoords.x = center.lat;
-                geoCoords.y = center.lng;
 
+                updateGeoCoords(center.lat, center.lng);
                 createPoly(geoCoords);
             }
 
@@ -372,11 +371,7 @@
         map.on('load', function(e) {
 
             var center = map.getCenter();
-
-            geoCoords.x = center.lat;
-            geoCoords.y = center.lng;
-            geoCoords.z = map.getZoom();
-
+            updateGeoCoords(center.lat, center.lng, map.getZoom());
             $('#you').data({
                 'lat': geoCoords.x,
                 'lng': geoCoords.y
@@ -391,9 +386,9 @@
         });
 
         map.on('zoomend', function(e) {
-            var currentZ = map.getZoom();
-            geoCoords.z = currentZ;
-            $('#js-your-zoom > span').text(currentZ);
+            var z = map.getZoom();
+            updateGeoCoords(geoCoords.x, geoCoords.x, z);
+            $('#js-your-zoom > span').text(z);
         });
 
     }
@@ -472,15 +467,22 @@
         marker.on('dragend', function (e) {
             drawClear(drawnItems);
             fence.unitType = unitType.get();
-            geoCoords.x = e.target._latlng.lat;
-            geoCoords.y = e.target._latlng.lng;
+            fence.polyType = 'circle';
+            updateGeoCoords(e.target._latlng.lat, e.target._latlng.lng);
             markerUpdate(geoCoords);
             createPoly(geoCoords);
             markerMoved = true;
         });
     }
 
+    function updateGeoCoords(lat, lng, z) {
+        geoCoords.x = lat;
+        geoCoords.y = lng;
+        geoCoords.z = z || map.getZoom();
+    }
+
     function renderMediawall(geometry) {
+        var geomArr = [];
       if (wall.state) {
         try {
             wall.destroy();
@@ -493,8 +495,12 @@
       }
 
       if (fence.polyType === 'polyline') {
-        geometry.coordinates = [geometry.coordinates]
+        geomArr = [geometry.coordinates];
+      } else {
+        geomArr = geometry.coordinates;
       }
+
+      console.log(fence.polyType, geometry);
 
       Livefyre.require([
               'streamhub-wall#3',
@@ -509,7 +515,7 @@
                   collection: collectionDetails,
                   geometry: {
                     type: "Polygon",
-                    coordinates: geometry.coordinates
+                    coordinates: geomArr
                   },
                   transformState: function stateToContent(state) {
                       var contents = SDK.StateToContent.transform(state);
@@ -549,7 +555,7 @@
             var radiusInMeters, validInput, angleDegrees;
 
             fence.distance = distance || parseFloat($('#distance').val(), 10);
-            fence.distance = (fence.distance > 0) ? fence.distance : parseFloat('.25', 10);
+            fence.distance = (fence.distance > 0) ? fence.distance : parseFloat('.125', 10);
 
             radiusInMeters = _convertDistanceToMeters(fence);
             validInput = _validateDistance(radiusInMeters);
@@ -571,7 +577,6 @@
         console.dir(geometry);
 
         addFence(geometry);
-        geoCoords.z = map.getZoom();
         renderMediawall(geometry);
         _validateGeoJSON(geometry);
 
@@ -583,6 +588,7 @@
 
 
         function _convertDistanceToMeters(fence) {
+            // TODO turn this into a utility function that can turn m<=>km, m<=>mi, mi<=>km
             var distMeters;
             if (fence.unitType === 'm') {
                 distMeters = fence.distance;
@@ -673,8 +679,7 @@
         $el.addClass('active');
         $el.siblings('button').removeClass('active');
         $('#distance').val(10);
-        geoCoords.x = parseFloat($el.data('lat'));
-        geoCoords.y = parseFloat($el.data('lng'));
+        updateGeoCoords(parseFloat($el.data('lat')), parseFloat($el.data('lng')));
         mapSetView(geoCoords);
     });
 
@@ -688,8 +693,7 @@
         updateCollectionDeets();
 
         if (!isNaN(lng) && !isNaN(lat)) {
-            geoCoords.x = lat;
-            geoCoords.y = lng;
+            updateGeoCoords(lat, lng);
         }
         createPoly(geoCoords);
     });
