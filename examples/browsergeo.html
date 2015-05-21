@@ -42,7 +42,7 @@
             </div>
             <div class="sidebar-pane" id="settings">
                 <h2>Collection Settings</h2>
-                <form class="form-inline" role="form" id="radius-form">
+                <form class="form-inline" role="form" id="network-form">
                     <div class="form-group">
                         <label for="default-values">Default Network: </label>
                         <input  id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827" type="checkbox" name="defualts-values" value="true" checked>
@@ -58,7 +58,14 @@
                         <label for="article-id">ArticleId: </label>
                         <input class="" value="" name="article-id" id="article-id" placeholder="uat-ben-geo-0" />
                         </div>
+                        <div>
+                        <button type="submit" class="btn" id="submit-network">
+                            Update Network
+                        </button>
                     </div>
+                    </div>
+                </form>
+                <form class="form-inline" role="form" id="radius-form">
                     <div class="form-group">
                         <label for="perfect-circle">Draw Fence: </label>
                         <input  id="perfect-circle" type="checkbox" name="perfect-circle" value="">
@@ -198,6 +205,7 @@
         if (local.avaialable) {
             local.setStorage('collectionDetails', collectionDetails);
         }
+        console.log(collectionDetails);
     }
 
     var local = {
@@ -632,20 +640,6 @@
             return (r < MAX && r > MIN) ? true : false;
         }
 
-
-        // function _convertDistance(fence) {
-        //     // TODO turn this into a utility function that can turn m<=>km, m<=>mi, mi<=>km
-        //     var distMeters;
-        //     if (fence.unitType === 'm') {
-        //         distMeters = fence.distance;
-        //     } else if (fence.unitType === 'km') {
-        //         distMeters = fence.distance * 1000;
-        //     } else if (fence.unitType === 'mi') {
-        //         distMeters = fence.distance * 1609.34;
-        //     }
-        //     return distMeters;
-        // }
-
         function _angularRadiusFromSurfaceRadius(surfaceRadius) {
             var DISTANCE_TO_CENTER_OF_EARTH_METERS = 6371000;
             var angle = ((surfaceRadius / DISTANCE_TO_CENTER_OF_EARTH_METERS * 180)) / Math.PI;
@@ -695,19 +689,6 @@
         }
     }
 
-    // Click Handlers
-    $('body').on('change', '#default-values', function (e) {
-        e.preventDefault();
-        var $el = $(e.target);
-        if ($el.is(":checked")) {
-            updateCollectionDeets(defaultData);
-            $el.attr('checked', true);
-        } else {
-            wipeInputDeets();
-            updateCollectionDeets();
-        }
-    });
-
     function convertUnits(val, from, to) {
         var convertVal = 0;
         if (from === to) {
@@ -735,8 +716,41 @@
             }
         }
         return convertVal;
-
     }
+
+    function goGoGadgetMap() {
+
+        var lng = parseFloat($('#marker-lng').val());
+        var lat = parseFloat($('#marker-lat').val());
+
+        $('.error').text('');
+        $('.quick').removeClass('active');
+
+        if (!isNaN(lng) && !isNaN(lat)) {
+            updateGeoCoords(lat, lng);
+        }
+        createPoly(geoCoords);
+    }
+    // Click Handlers
+    $('body').on('change', '#default-values', function (e) {
+        e.preventDefault();
+        var $el = $(e.target);
+
+        if ($el.is(":checked")) {
+            updateCollectionDeets(defaultData);
+            $el.attr('checked', true);
+            goGoGadgetMap();
+        } else {
+            $el.removeAttr('checked');
+            updateCollectionDeets();
+        }
+    });
+
+    $('#network-form').submit(function (e) {
+        e.preventDefault();
+        updateCollectionDeets();
+        goGoGadgetMap();
+    });
 
     $('body').on('change', '#perfect-circle', function (e) {
         e.preventDefault();
@@ -776,23 +790,14 @@
 
     $('#radius-form').submit(function(e) {
         e.preventDefault();
-        var lng = parseFloat($('#marker-lng').val());
-        var lat = parseFloat($('#marker-lat').val());
-
-        $('.error').text('');
-        $('.quick').removeClass('active');
-        updateCollectionDeets();
-
-        if (!isNaN(lng) && !isNaN(lat)) {
-            updateGeoCoords(lat, lng);
-        }
-        createPoly(geoCoords);
+        goGoGadgetMap();
     });
 
     $(document).ready(function () {
         if (local.checkStorage()) {
             if (local.getStorage('collectionDetails') && local.getStorage('collectionDetails') !== '') {
                 applyInputDeets(local.getStorage('collectionDetails'));
+                updateCollectionDeets();
             }
         }
         mapInit(geoCoords);

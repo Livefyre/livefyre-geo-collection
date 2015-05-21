@@ -74,7 +74,8 @@
 #perfect-circle + div + div + div,
 #default-values + div,
 #default-values + div + div,
-#default-values + div + div + div {
+#default-values + div + div + div,
+#default-values + div + div + div + div {
     height: auto;
 }
 
@@ -83,7 +84,8 @@
 #perfect-circle:checked + div + div + div,
 #default-values:checked + div,
 #default-values:checked + div + div,
-#default-values:checked + div + div + div {
+#default-values:checked + div + div + div,
+#default-values:checked + div + div + div + div {
     height: 0;
 }
 
@@ -161,7 +163,8 @@ input[type="checkbox"] {
     height: 24px;
 }
 
-#submit-radius {
+#submit-radius,
+#submit-network {
     max-width: 190px;
     float: right;
 }
