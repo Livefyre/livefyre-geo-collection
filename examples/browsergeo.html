@@ -432,7 +432,8 @@
             return fence.unitType;
         },
         get: function () {
-            fence.unitType = fence.unitType || $('#units').val();
+            fence.unitType = (fence.unitType !== '') ? fence.unitType : $('#units').val();
+            console.log(fence.unitType);
             return fence.unitType;
         }
     };
@@ -576,19 +577,20 @@
     function createPoly(geoCoords, distance) {
         console.log('create called');
         checkFenceState(fence);
-        console.log(fence.polyType);
 
         if (!fence.polyType) {
             fence.polyType = 'circle';
         }
 
-        console.log(fence.polyType);
         if (fence.polyType === 'circle') {
 
             var radiusInMeters, validInput, angleDegrees;
 
+            fence.unitType = unitType.get();
             fence.distance = distance || parseFloat($('#distance').val(), 10);
-            fence.distance = (fence.distance > 0) ? fence.distance : parseFloat('.125', 10);
+            fence.distance = (fence.distance >= parseFloat('.1', 10)) ? fence.distance : parseFloat('.125', 10);
+
+
 
             radiusInMeters = _convertDistanceToMeters(fence);
             validInput = _validateDistance(radiusInMeters);
