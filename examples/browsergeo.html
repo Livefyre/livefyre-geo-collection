@@ -45,18 +45,18 @@
                 <form class="form-inline" role="form" id="radius-form">
                     <div class="form-group">
                         <label for="default-values">Default Network: </label>
-                        <input  id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827" type="checkbox" name="defualts-values" value="true">
+                        <input  id="default-values" data-network="labs-t402.fyre.co" data-article-id="uat-ben-geo-0" data-site-id="303827" type="checkbox" name="defualts-values" value="true" checked>
                         <div>
                         <label for="network">Network: </label>
-                        <input class="" value="" name="network" id="network" placeholder="xxxxxx.fyre.co" />
+                        <input class="" value="" name="network" id="network" placeholder="labs-t402.fyre.co" />
                         </div>
                         <div>
                         <label for="site-id">SiteId: </label>
-                        <input class="" value="" name="site-id" id="site-id" placeholder="xxxxxx" />
+                        <input class="" value="" name="site-id" id="site-id" placeholder="303827" />
                         </div>
                         <div>
                         <label for="article-id">ArticleId: </label>
-                        <input class="" value="" name="article-id" id="article-id" placeholder="custom-xxxxxxxxxxxxx" />
+                        <input class="" value="" name="article-id" id="article-id" placeholder="uat-ben-geo-0" />
                         </div>
                     </div>
                     <div class="form-group">
@@ -742,7 +742,13 @@
         e.preventDefault();
         var $el = $(e.target);
         var $drawEl = $('.leaflet-draw');
-        ($el.is(":checked")) ?  $drawEl.fadeIn() : $drawEl.fadeOut();
+        if ($el.is(":checked")) {
+         $drawEl.fadeIn();
+         $('#submit-radius').hide()
+        } else {
+            $('#submit-radius').show();
+            $drawEl.fadeOut();
+        }
     });
 
     $('body').on('change', '#units', function (e) {
