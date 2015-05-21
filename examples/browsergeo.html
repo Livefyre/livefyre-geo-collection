@@ -299,6 +299,7 @@
             // add Layer to Control Group
             drawnItems.addLayer(layer);
             layersGeoJSON = drawnItems.toGeoJSON();
+            console.dir(layersGeoJSON);
             geometry = layersGeoJSON.features[0].geometry
 
             fence.polyType = type;
@@ -482,6 +483,10 @@
         updateCollectionDeets(defaultData);
       }
 
+      if (fence.polyType === 'polyline') {
+        geometry.coordinates = [geometry.coordinates]
+      }
+
       Livefyre.require([
               'streamhub-wall#3',
               'streamhub-sdk#2',
@@ -521,9 +526,11 @@
     }
 
     function createPoly(geoCoords, distance) {
-
+        console.log('create called');
         checkFenceState(fence);
         console.dir(geometry);
+        console.log(fence.polyType);
+
         if (fence.polyType === 'circle') {
 
             var radiusInMeters, validInput, angleDegrees;
@@ -534,21 +541,20 @@
             radiusInMeters = _convertDistanceToMeters(fence);
             validInput = _validateDistance(radiusInMeters);
 
-            // console.log(radiusInMeters, validInput, angleDegrees);
             if (!validInput) {
                 $('.error').text('Those numbers are out of range. Try again.');
             } else {
                 angleDegrees = _angularRadiusFromSurfaceRadius(radiusInMeters);
                 geometry = _createPolyCircle(angleDegrees, geoCoords);
-                console.dir(geometry);
                 $('#distance').val(fence.distance);
 //                $('#perfect-circle').attr('checked', true);
                 $('#submit-radius').text('Update Fence');
             }
         } else if  (fence.polyType === 'polyline') {
-            //geometry = _createPolyGraticle(geometry);
-            console.dir(geometry);
+            //console.dir('polyline', geometry);
         }
+
+        console.dir(geometry);
 
         addFence(geometry);
         geoCoords.z = map.getZoom();
