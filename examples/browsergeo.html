@@ -284,18 +284,52 @@
         // Most have draw:event<start|stop>
 
         map.on('draw:drawstart', function (e) {
+            console.log('start');
             // only allow one layer at a time
             drawClear(drawnItems);
         });
 
+        map.on('draw:editstart', function (e) {
+            console.log(e)
+        });
+
         map.on('draw:edited', function (e) {
-            checkFenceState(fence);
+            var layersGeoJSON = drawnItems.toGeoJSON();
             var layer = e.layers._layers;
+            var id = Object.keys(layer);
+
+            geometry = layersGeoJSON.features[0].geometry;
+            checkFenceState(fence);
+
+            if (fence.polyType === 'circle') {
+
+                // Explicitly use Meters
+                unitType.set('m');
+                fence.distance = layer[id]._mRadius;
+
+                // update view
+                updateGeoCoords(layer[id]._latlng.lat, layer[id]._latlng.lng);
+                createPoly(geoCoords, fence.distance);
+
+            } else if (fence.polyType === 'polyline') {
+                line_points = layer.getLatLngs();
+                var polyline = L.polygon(line_points).addTo(drawnItems);
+
+                // Get middle latLng on polyline
+                var center = layer.getBounds().getCenter();
+
+                updateGeoCoords(center.lat, center.lng);
+                createPoly(geoCoords);
+            }
+
+            moveMarker(geoCoords);
+            markerUpdate(geoCoords);
 
             // TODO redefine gemometry after successful edit. rendermedialwall
             // drawClear(drawnItems);
             console.log(layer)
         });
+
 
         map.on('draw:created', function (e) {
             console.log('draw:created');
@@ -309,18 +343,17 @@
             // add Layer to Control Group
             drawnItems.addLayer(layer);
             layersGeoJSON = drawnItems.toGeoJSON();
-            console.dir(layersGeoJSON);
             geometry = layersGeoJSON.features[0].geometry
 
             fence.polyType = type;
 
             if (type === 'circle') {
+
                 // Explicitly use Meters
-                fence.unitType = 'm';
+                unitType.set('m');
                 fence.distance = layer._mRadius;
 
                 // update view
-                unitType.set(fence.unitType);
                 updateGeoCoords(layer._latlng.lat, layer._latlng.lng);
                 createPoly(geoCoords, fence.distance);
 
@@ -395,11 +428,11 @@
 
     var unitType = {
         set: function (val) {
-            $('#units').val(val);
+            fence.unitType = val;
             return fence.unitType;
         },
         get: function () {
-            fence.unitType = $('#units').val();
+            fence.unitType = fence.unitType || $('#units').val();
             return fence.unitType;
         }
     };
@@ -559,7 +592,7 @@
 
             radiusInMeters = _convertDistanceToMeters(fence);
             validInput = _validateDistance(radiusInMeters);
-            console.log(fence.distance, radiusInMeters, validInput);
+            console.log(fence.distance, fence.unitType, radiusInMeters, validInput);
 
             if (!validInput) {
                 $('.error').text('Those numbers are out of range. Try again.');
