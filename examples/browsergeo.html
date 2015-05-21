@@ -165,7 +165,6 @@
 
     var defaultData = $('#default-values').data();
 
-    // bruces collection http://admin.client-demo-accounts.fyre.co/v3/site/372680/collections/122538518
     var weatherCollection = {
         network: 'client-demo-accounts.fyre.co',
         siteId: 372680,
@@ -205,7 +204,6 @@
         if (local.avaialable) {
             local.setStorage('collectionDetails', collectionDetails);
         }
-        console.log(collectionDetails);
     }
 
     var local = {
@@ -288,17 +286,17 @@
 
         var drawControl = new L.Control.Draw(options);
         map.addControl(drawControl);
+
         // Event Handlers
         // Most have draw:event<start|stop>
 
         map.on('draw:drawstart', function (e) {
-            console.log('start');
             // only allow one layer at a time
             drawClear(drawnItems);
         });
 
         map.on('draw:editstart', function (e) {
-            console.log(e)
+            console.log(e);
         });
 
         map.on('draw:edited', function (e) {

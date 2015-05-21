@@ -188,10 +188,19 @@ input[type="checkbox"] {
         margin-left: 0;
         clear: both;
     }
+
+    #submit-radius,
+    #submit-network {
+    max-width: 100%;
+    }
 }
 @media (min-width: 992px) and (max-width: 1199px) {
     .sidebar {
         width: 390px;
+    }
+    #submit-radius,
+    #submit-network {
+    max-width: 100%;
     }
 }
 
