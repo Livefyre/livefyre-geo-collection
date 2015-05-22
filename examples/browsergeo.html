@@ -254,7 +254,12 @@
         marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
-        createPoly(geoCoords, null, addFence);
+        fence.polyType = 'circle';
+        try {
+            drawnItems.clearLayers();
+        } catch (e){}
+
+        createPoly(geoCoords, 10, addFence);
     }
 
     function drawClear(drawnItems) {
