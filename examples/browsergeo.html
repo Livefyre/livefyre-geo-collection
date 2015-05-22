@@ -301,12 +301,21 @@
 
         map.on('draw:drawstart', function (e) {
             // only allow one layer at a time
-            fence.prevUnitType = unitType.get();
-            unitType.set('m');
-            checkFenceState(fence);
-            drawClear(drawnItems);
+            drawnItems.setStyle({
+                'fillOpacity' :'0',
+                'weight' : '0',
+                'opacity': '0'
+            });
         });
 
+        map.on('draw:drawstop', function (e) {
+            // only allow one layer at a time
+            drawnItems.setStyle({
+                'fillOpacity' :'0.2',
+                'weight' :'5',
+                'opacity': '0.5'
+            });
+        });
         map.on('draw:editstart', function (e) {
             console.log(e);
             var layer, id;
@@ -372,6 +381,11 @@
 
 
         map.on('draw:created', function (e) {
+
+            fence.prevUnitType = unitType.get();
+            unitType.set('m');
+            checkFenceState(fence);
+            drawClear(drawnItems);
 
             console.log('draw:created');
             // TODO - Refactor and get shit out of here.
