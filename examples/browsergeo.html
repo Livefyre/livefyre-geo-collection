@@ -169,7 +169,8 @@
         prevUnitType: $('#units').val(),
         unitType: $('#units').val(),
         polyType: 'No fence yet',
-        bounds: null
+        bounds: null,
+        id: null
     };
 
     var defaultData = $('#default-values').data();
@@ -317,16 +318,14 @@
             });
         });
         map.on('draw:editstart', function (e) {
-            console.log(e);
             var layer, id;
             if (fence.polyType === 'circle') {
-                layer = e.target._layers;
-                id = fence.el._leaflet_id
+                layer = e.target._layers[fence.id];
             } else if (fence.polyType === 'polyline') {
-                 id = Object.keys(fence.el._layers);
-                 layer = e.target._layers[id];
+                 //id = Object.keys(fence.el._layers);
+                 layer = e.target._layers[fence.id];
             }
-
+            console.log('layer: ', layer);
         });
 
         map.on('draw:edited', function (e) {
@@ -342,22 +341,20 @@
 
             if (fence.polyType === 'circle') {
                 layer = e.target._layers;
-                id = fence.el._leaflet_id
                 // Explicitly use Meters
-                console.log(layer[id]);
-                fence.distance = layer[id]._mRadius;
+                console.log(layer[fence.id]);
+                fence.distance = layer[fence.id]._mRadius;
 
                 checkFenceState(fence);
 
                 // update view
-                updateGeoCoords(layer[id]._latlng.lat, layer[id]._latlng.lng);
-
+                updateGeoCoords(layer[fence.id]._latlng.lat, layer[fence.id]._latlng.lng);
                 createPoly(geoCoords, fence.distance);
 
             } else if (fence.polyType === 'polyline') {
 
                 id = Object.keys(fence.el._layers);
-                layer = e.target._layers[id];
+                layer = e.target._layers[fence.id];
 
                 line_points = layer.getLatLngs();
 
@@ -381,7 +378,6 @@
 
 
         map.on('draw:created', function (e) {
-
             fence.prevUnitType = unitType.get();
             unitType.set('m');
             checkFenceState(fence);
@@ -397,6 +393,7 @@
 
             // add Layer to Control Group
             drawnItems.addLayer(layer);
+            fence.id = layer._leaflet_id;
             layersGeoJSON = drawnItems.toGeoJSON();
             geometry = layersGeoJSON.features[0].geometry
 
@@ -525,7 +522,7 @@
               layer.bindPopup('The diameter of your fence is <br /> ' + (fence.distance * 2) +' ' + unitType.get() + '.');
           }
         });
-        map.addLayer(fence.el);
+        // map.addLayer(fence.el);
         fence.bounds = fence.el.getBounds();
         markerUpdate(geoCoords, fence.bounds);
         map.fitBounds(fence.bounds);
