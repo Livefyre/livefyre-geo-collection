@@ -303,32 +303,42 @@
             // only allow one layer at a time
             fence.prevUnitType = unitType.get();
             unitType.set('m');
+            checkFenceState(fence);
             drawClear(drawnItems);
         });
 
         map.on('draw:editstart', function (e) {
             console.log(e);
-            var layer = e.target._layers;
-            var id = fence.el._leaflet_id || null;
-            checkFenceState(fence, id);
+            var layer, id;
+            if (fence.polyType === 'circle') {
+                layer = e.target._layers;
+                id = fence.el._leaflet_id
+            } else if (fence.polyType === 'polyline') {
+                 id = Object.keys(fence.el._layers);
+                 layer = e.target._layers[id];
+            }
+
         });
 
         map.on('draw:edited', function (e) {
+            var layer, id;
             var layersGeoJSON = drawnItems.toGeoJSON();
-            var layer = e.layers._layers;
-            var id = Object.keys(layer);
-            console.log('here', layer, id);
+            var line_points = [];
+            // var layer = e.layers._layers;
+            // var id = Object.keys(layer);
             //layer[id].options.fillOpacity = 0.2;
 
             unitType.set('m');
             geometry = layersGeoJSON.features[0].geometry;
-            checkFenceState(fence);
 
             if (fence.polyType === 'circle') {
-
+                layer = e.target._layers;
+                id = fence.el._leaflet_id
                 // Explicitly use Meters
                 console.log(layer[id]);
                 fence.distance = layer[id]._mRadius;
+
+                checkFenceState(fence);
 
                 // update view
                 updateGeoCoords(layer[id]._latlng.lat, layer[id]._latlng.lng);
@@ -336,12 +346,18 @@
                 createPoly(geoCoords, fence.distance);
 
             } else if (fence.polyType === 'polyline') {
+
+                id = Object.keys(fence.el._layers);
+                layer = e.target._layers[id];
+
                 line_points = layer.getLatLngs();
+
                 var polyline = L.polygon(line_points).addTo(drawnItems);
 
                 // Get middle latLng on polyline
                 var center = layer.getBounds().getCenter();
 
+                checkFenceState(fence);
                 updateGeoCoords(center.lat, center.lng);
                 createPoly(geoCoords);
 
@@ -495,6 +511,7 @@
               layer.bindPopup('The diameter of your fence is <br /> ' + (fence.distance * 2) +' ' + unitType.get() + '.');
           }
       });
+      debugger;
         map.addLayer(fence.el);
         fence.bounds = fence.el.getBounds();
         markerUpdate(geoCoords, fence.bounds);
@@ -623,13 +640,14 @@
 
     function createPoly(geoCoords, distance) {
         console.log('create called');
-        checkFenceState(fence);
 
         if (!fence.polyType) {
             fence.polyType = 'circle';
         }
 
         if (fence.polyType === 'circle') {
+
+            checkFenceState(fence);
 
             var radiusInMeters, validInput, angleDegrees;
 
@@ -827,10 +845,6 @@
         goGoGadgetMap();
     });
 
-    var $cancelBtn = $('.leaflet-draw-section').eq(2).find('.leaflet-draw-actions li').eq(2).children('a');
-    $cancelBtn.on('click', function (e) {
-        console.log('cancel');
-    });
     $(document).ready(function () {
         if (local.checkStorage()) {
             if (local.getStorage('collectionDetails') && local.getStorage('collectionDetails') !== '') {
