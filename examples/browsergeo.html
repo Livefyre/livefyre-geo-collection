@@ -461,6 +461,14 @@
             zoomControl: false
         });
 
+        map.attributionControl.setPrefix('');
+
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: 'Livefyre Geo Fencing',
+            reuseTiles: true,
+            detectRetina: true
+        }).addTo(map);
+
         var zoomControl = L.control.zoom({
             position: 'topright'
         });
@@ -472,21 +480,15 @@
             maximumAge: 59999.9
         });
 
-        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-            attribution: 'Livefyre Geo Maps',
-            reuseTiles: true,
-            detectRetina: true
-        }).addTo(map);
-
         map.addControl(zoomControl);
-        drawInit();
 
         map.on('load', function(e) {
             var center, sidebar;
-
+            drawInit();
             center = map.getCenter();
 
             updateGeoCoords(center.lat, center.lng, map.getZoom());
+
             $('#you').data({
                 'lat': geoCoords.x,
                 'lng': geoCoords.y
