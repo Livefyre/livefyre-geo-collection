@@ -327,7 +327,6 @@
                 updateGeoCoords(layer[id]._latlng.lat, layer[id]._latlng.lng);
 
                 createPoly(geoCoords, fence.distance);
-                updateUnits();
 
             } else if (fence.polyType === 'polyline') {
                 line_points = layer.getLatLngs();
@@ -371,11 +370,8 @@
 
                 // update view
                 updateGeoCoords(layer._latlng.lat, layer._latlng.lng);
-
+                unitType.set('m');
                 createPoly(geoCoords, fence.distance);
-                updateUnits();
-
-                unitType.set(fence.prevUnitType);
 
             } else if (type === 'polyline') {
                 line_points = layer.getLatLngs();
@@ -385,6 +381,8 @@
                 var center = layer.getBounds().getCenter();
 
                 updateGeoCoords(center.lat, center.lng);
+
+                unitType.set('m');
                 createPoly(geoCoords);
             }
 
@@ -399,6 +397,8 @@
         var currDistance = convertUnits(fence.distance, unitType.get(), fence.prevUnitType);
         $('#distance').val(currDistance);
         $('#units').val(fence.prevUnitType);
+        unitType.set(fence.prevUnitType);
+        markerUpdate(geoCoords);
     }
 
     function mapInit(geoCoords) {
@@ -625,9 +625,13 @@
 
             fence.unitType = unitType.get();
 
+            console.log('1', fence.distance, fence.unitType, validInput);
+
             radiusInMeters = convertUnits(fence.distance, fence.unitType, 'm');
+
             validInput = _validateDistance(radiusInMeters);
-            console.log(fence.distance, fence.unitType, radiusInMeters, validInput);
+
+            console.log('2', fence.distance, fence.unitType, radiusInMeters, fence.prevUnitType, validInput);
 
             if (!validInput) {
                 $('.error').text('Those numbers are out of range. Try again.');
@@ -643,6 +647,7 @@
         }
 
         addFence(geometry);
+        updateUnits();
         renderMediawall(geometry);
         _validateGeoJSON(geometry);
 
