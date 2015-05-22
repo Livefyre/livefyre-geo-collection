@@ -302,7 +302,7 @@
         map.on('draw:drawstart', function (e) {
             // only allow one layer at a time
             fence.prevUnitType = unitType.get();
-            fence.unitType = 'm';
+            unitType.set('m');
             drawClear(drawnItems);
         });
 
@@ -315,6 +315,7 @@
             var layer = e.layers._layers;
             var id = Object.keys(layer);
 
+            unitType.set('m');
             geometry = layersGeoJSON.features[0].geometry;
             checkFenceState(fence);
 
