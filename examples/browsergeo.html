@@ -86,13 +86,19 @@
                             </select>
                             <input class="" value="" id="distance" placeholder="0.1 – 2000" />
                         </div>
+                        <div>
+                            <button type="submit" class="btn" id="submit-radius">
+                                Create Fence
+                            </button>
+                        </div>
                         <p class="error"></p>
                     </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn" id="submit-radius">
-                            Create Fence
-                        </button>
-                    </div>
+                    <ul class="tips">
+                        <li><h3>Drawing Tips</h3></li>
+                        <li>When creating a polygon using the polyline draw tool <span class="leaflet-draw-draw-polyline"></span>, click the last point on your polyline to close and comit your polygon fence.</li>
+                        <li>After drawing a circular polygon <span class="leaflet-draw-draw-circle"></span>anywhere on the map, you can edit its parameters after the layer is placed by selecting the edit icon <span class="leaflet-draw-edit-edit"></span> and manipulating its polygonal controls.</li>
+                    </ul>
+                    </p>
                 </form>
             </div>
             <div class="sidebar-pane" id="profile">
@@ -755,10 +761,10 @@
         var $drawEl = $('.leaflet-draw');
         if ($el.is(":checked")) {
          $drawEl.fadeIn();
-         $('#submit-radius').hide()
+         $('.tips').show();
         } else {
-            $('#submit-radius').show();
             $drawEl.fadeOut();
+            $('.tips').hide();
         }
     });
 

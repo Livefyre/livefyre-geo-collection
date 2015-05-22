@@ -118,8 +118,10 @@
 
 .leaflet-draw-actions-top a,
 .leaflet-draw-actions-bottom a {
-	height: 27px;
-	line-height: 27px;
+  height: 53px;
+  line-height: 53px;
+  font-size: 1.4rem;
+  padding: 0 30px;
 }
 
 .leaflet-draw-actions a:hover {
@@ -159,6 +161,42 @@
 	background-position: -60px -1px;
 }
 
+.tips {
+    display: none;
+}
+
+.tips li {
+    margin-bottom: 10px;
+    margin-left: 20px;
+}
+
+.tips li h3 {
+    margin-bottom: 0;
+}
+
+.tips .leaflet-draw-draw-circle,
+.tips .leaflet-draw-draw-polyline,
+.tips .leaflet-draw-edit-edit {
+	background-image: url('../images/spritesheet.png');
+  background-repeat: no-repeat;
+	display: inline-block;
+  height: 20px;
+  width: 28px;
+  position: relative;
+  top: 0px;
+}
+
+.leaflet-draw-draw-circle {
+	background-position: -92px -2px;
+}
+
+.leaflet-draw-draw-polyline {
+	background-position: 0 -1px;
+}
+
+.leaflet-draw-edit-edit {
+	background-position: -152px -1px;
+}
 .leaflet-draw-toolbar .leaflet-draw-draw-circle {
 	background-position: -92px -2px;
 }

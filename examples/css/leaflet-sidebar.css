@@ -72,16 +72,19 @@
 #perfect-circle + div,
 #perfect-circle + div + div,
 #perfect-circle + div + div + div,
+#perfect-circle + div + div + div + div,
 #default-values + div,
 #default-values + div + div,
 #default-values + div + div + div,
-#default-values + div + div + div + div {
+#default-values + div + div + div + div,
+#default-values + div + div + div + div + div {
     height: auto;
 }
 
 #perfect-circle:checked + div,
 #perfect-circle:checked + div + div,
 #perfect-circle:checked + div + div + div,
+#perfect-circle:checked + div + div + div + div,
 #default-values:checked + div,
 #default-values:checked + div + div,
 #default-values:checked + div + div + div,
