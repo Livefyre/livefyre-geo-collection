@@ -95,7 +95,7 @@
                     </div>
                     <ul class="tips">
                         <li><h4>Drawing Tips</h4></li>
-                        <li><p>Use the contorls to the right to draw the shape of your geo fence.</p></li>
+                        <li><p>Use the controls to the right to draw the shape of your geo fence.</p></li>
                         <li><p>When creating a polygon using the polyline draw tool <span class="leaflet-draw-draw-polyline"></span>, click the last point on your polyline to close and commit your polygon fence.</p></li>
                         <li><p>After drawing a circular polygon <span class="leaflet-draw-draw-circle"></span>anywhere on the map, you can edit its parameters after the layer is placed by selecting the edit icon <span class="leaflet-draw-edit-edit"></span> and manipulating its polygonal controls</p></li>
                     </ul>
@@ -344,11 +344,15 @@
             } else if (fence.polyType === 'polyline') {
                  layer = e.target._layers[fence.id];
             }
-            marker.dragging.disable()
+            marker.dragging.disable();
+            $activeEl = $('.sidebar-tabs li.active', $sideEl);
+            collapseSidebar(true, $sideEl);
         });
 
         map.on('draw:editstop', function (e) {
             marker.dragging.enable();
+            $activeEl = $('.sidebar-tabs li.active', $sideEl);
+            collapseSidebar(true, $sideEl);
         });
 
         map.on('draw:edited', function (e) {
@@ -358,6 +362,9 @@
 
             unitType.set('m');
             geometry = layersGeoJSON.features[0].geometry;
+
+            $activeEl = $('.sidebar-tabs li.active', $sideEl);
+            collapseSidebar(true, $sideEl);
 
             if (fence.polyType === 'circle') {
                 layer = e.target._layers;
@@ -792,7 +799,8 @@
         var lng = parseFloat($('#marker-lng').val());
         var lat = parseFloat($('#marker-lat').val());
 
-        checkFenceState(fence);
+        drawnItems.clearLayers();
+
         $('.error').text('');
         $('.quick').removeClass('active');
 
