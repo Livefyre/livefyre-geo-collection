@@ -500,8 +500,8 @@
     }
 
     function addFence(geometry) {
-      fence.state = true;
-      fence.el = L.geoJson(geometry, {
+        fence.state = true;
+        fence.el = L.geoJson(geometry, {
           style: function(feature) {
               return {
                   color: 'red'
@@ -510,8 +510,7 @@
           onEachFeature: function(feature, layer) {
               layer.bindPopup('The diameter of your fence is <br /> ' + (fence.distance * 2) +' ' + unitType.get() + '.');
           }
-      });
-      debugger;
+        });
         map.addLayer(fence.el);
         fence.bounds = fence.el.getBounds();
         markerUpdate(geoCoords, fence.bounds);
