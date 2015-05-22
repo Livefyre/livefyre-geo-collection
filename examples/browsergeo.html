@@ -166,7 +166,8 @@
         state: false,
         el: null,
         distance: null,
-        unitType: 'mi',
+        prevUnitType: $('#units').val(),
+        unitType: $('#units').val(),
         polyType: 'No fence yet',
         bounds: null
     };
@@ -300,6 +301,8 @@
 
         map.on('draw:drawstart', function (e) {
             // only allow one layer at a time
+            fence.prevUnitType = unitType.get();
+            fence.unitType = 'm';
             drawClear(drawnItems);
         });
 
@@ -311,8 +314,6 @@
             var layersGeoJSON = drawnItems.toGeoJSON();
             var layer = e.layers._layers;
             var id = Object.keys(layer);
-            var oldUnitType;
-            var currDistance;
 
             geometry = layersGeoJSON.features[0].geometry;
             checkFenceState(fence);
@@ -321,16 +322,12 @@
 
                 // Explicitly use Meters
                 fence.distance = layer[id]._mRadius;
-                oldUnitType = unitType.get();
-                unitType.set('m');
-                currDistance = convertUnits(fence.distance, unitType.get(), oldUnitType);
 
                 // update view
                 updateGeoCoords(layer[id]._latlng.lat, layer[id]._latlng.lng);
-                createPoly(geoCoords, fence.distance);
 
-                $('#distance').val(currDistance);
-                $('#units').val(oldUnitType);
+                createPoly(geoCoords, fence.distance);
+                updateUnits();
 
             } else if (fence.polyType === 'polyline') {
                 line_points = layer.getLatLngs();
@@ -359,9 +356,7 @@
                 layersGeoJSON = null,
                 layer = e.layer,
                 feature = null,
-                line_points = [],
-                oldUnitType,
-                currDistance;
+                line_points = [];
 
             // add Layer to Control Group
             drawnItems.addLayer(layer);
@@ -373,15 +368,14 @@
             if (type === 'circle') {
                 // Explicitly use Meters
                 fence.distance = layer._mRadius;
-                oldUnitType = unitType.get();
-                unitType.set('m');
-                currDistance = convertUnits(fence.distance, unitType.get(), oldUnitType);
 
                 // update view
                 updateGeoCoords(layer._latlng.lat, layer._latlng.lng);
+
                 createPoly(geoCoords, fence.distance);
-                $('#distance').val(currDistance);
-                $('#units').val(oldUnitType);
+                updateUnits();
+
+                unitType.set(fence.prevUnitType);
 
             } else if (type === 'polyline') {
                 line_points = layer.getLatLngs();
@@ -399,6 +393,12 @@
 
         });
 
+    }
+
+    function updateUnits() {
+        var currDistance = convertUnits(fence.distance, unitType.get(), fence.prevUnitType);
+        $('#distance').val(currDistance);
+        $('#units').val(fence.prevUnitType);
     }
 
     function mapInit(geoCoords) {
@@ -446,9 +446,8 @@
 
         map.on('zoomend', function(e) {
             var z = map.getZoom();
-            updateGeoCoords(geoCoords.x, geoCoords.x, z);
+            updateGeoCoords(geoCoords.x, geoCoords.y, z);
             markerUpdate(geoCoords);
-
             $('#js-your-zoom > span').text(z);
         });
 
@@ -460,8 +459,6 @@
             return fence.unitType;
         },
         get: function () {
-            fence.unitType = (fence.unitType !== '') ? fence.unitType : $('#units').val();
-            console.log(fence.unitType);
             return fence.unitType;
         }
     };
@@ -515,6 +512,7 @@
     }
 
     function markerUpdate(geoCoords) {
+        console.log(geoCoords);
         var str = '';
         str += 'Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y + ' <br /> Zoom: ' + geoCoords.z + ' <br /> Fence Type: ' + fence.polyType + ' <br /> Unit Type: ' + unitType.get() + ' <br />';
         if (fence.bounds) {
@@ -537,7 +535,6 @@
 
         marker.on('dragend', function (e) {
             drawClear(drawnItems);
-            fence.unitType = unitType.get();
             fence.polyType = 'circle';
             updateGeoCoords(e.target._latlng.lat, e.target._latlng.lng);
             markerUpdate(geoCoords);
@@ -550,6 +547,7 @@
         geoCoords.x = lat;
         geoCoords.y = lng;
         geoCoords.z = z || map.getZoom();
+        console.log(geoCoords);
     }
 
     function renderMediawall(geometry) {
@@ -621,10 +619,11 @@
 
             var radiusInMeters, validInput, angleDegrees;
 
-            fence.unitType = unitType.get();
+            console.log('unit type before', fence.prevUnitType);
             fence.distance = distance || parseFloat($('#distance').val(), 10);
             fence.distance = (fence.distance >= parseFloat('.1', 10)) ? fence.distance : parseFloat('.125', 10);
 
+            fence.unitType = unitType.get();
 
             radiusInMeters = convertUnits(fence.distance, fence.unitType, 'm');
             validInput = _validateDistance(radiusInMeters);
@@ -787,6 +786,7 @@
 
         $distEl.val(convertedVal);
         unitType.set($el.val());
+        fence.prevUnitType = unitType.set($el.val());
         markerUpdate(geoCoords);
     });
 
