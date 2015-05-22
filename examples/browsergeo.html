@@ -96,7 +96,7 @@
                     <ul class="tips">
                         <li><h4>Drawing Tips</h4></li>
                         <li><p>Use the contorls to the right to draw the shape of your geo fence.</p></li>
-                        <li><p>When creating a polygon using the polyline draw tool <span class="leaflet-draw-draw-polyline"></span>, click the last point on your polyline to close and comit your polygon fence.</p></li>
+                        <li><p>When creating a polygon using the polyline draw tool <span class="leaflet-draw-draw-polyline"></span>, click the last point on your polyline to close and commit your polygon fence.</p></li>
                         <li><p>After drawing a circular polygon <span class="leaflet-draw-draw-circle"></span>anywhere on the map, you can edit its parameters after the layer is placed by selecting the edit icon <span class="leaflet-draw-edit-edit"></span> and manipulating its polygonal controls</p></li>
                     </ul>
                     </p>
@@ -268,9 +268,22 @@
         } catch (e) {}
     }
 
+
+    function collapseSidebar(bol, $el, $activeEl) {
+        if (bol) {
+            $el.addClass('collapsed').find('.sidebar-tabs li').removeClass('active');
+        } else {
+            $el.removeClass('collapsed')
+            $activeEl.addClass('active');
+        }
+    }
+
     function drawInit(cb) {
         drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
+
+        var $sideEl = $('#sidebar');
+        var $activeEl;
 
         var options = {
             position: 'topleft',
@@ -310,6 +323,8 @@
             });
             marker.closePopup();
             marker.setOpacity(0);
+            $activeEl = $('.sidebar-tabs li.active', $sideEl);
+            collapseSidebar(true, $sideEl);
         });
 
         map.on('draw:drawstop', function (e) {
@@ -319,6 +334,7 @@
                 'opacity': '0.5'
             });
             marker.setOpacity(1);
+            collapseSidebar(false, $sideEl, $activeEl);
         });
 
         map.on('draw:editstart', function (e) {
