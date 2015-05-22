@@ -254,7 +254,7 @@
         marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
-        createPoly(geoCoords);
+        createPoly(geoCoords, null, addFence);
     }
 
     function drawClear(drawnItems) {
@@ -845,6 +845,9 @@
     });
 
     $('body').on('click', '.quick', function(e) {
+
+        checkFenceState(fence);
+
         var $el = $(e.target);
         if ($el.hasClass('active')) {
             return;
