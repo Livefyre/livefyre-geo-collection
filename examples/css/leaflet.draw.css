@@ -49,7 +49,7 @@
 	padding: 0;
 	position: absolute;
 	left: 26px; /* leaflet-draw-toolbar.left + leaflet-draw-toolbar.width */
-	top: 0;
+	top: 0 !important;
 	white-space: nowrap;
 }
 
