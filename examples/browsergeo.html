@@ -269,11 +269,9 @@
     }
 
     function drawInit(cb) {
-        // Initialise the FeatureGroup to store editable layers
         drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
-        // Initialise the draw control and pass it the FeatureGroup of editable layers
         var options = {
             position: 'topleft',
             draw: {
@@ -303,9 +301,6 @@
         var drawControl = new L.Control.Draw(options);
         map.addControl(drawControl);
 
-        // Event Handlers
-        // Most have draw:event<start|stop>
-
         map.on('draw:drawstart', function (e) {
             // only allow one layer at a time
             drawnItems.setStyle({
@@ -318,7 +313,6 @@
         });
 
         map.on('draw:drawstop', function (e) {
-            // only allow one layer at a time
             drawnItems.setStyle({
                 'fillOpacity' :'0.2',
                 'weight' :'5',
@@ -326,6 +320,7 @@
             });
             marker.setOpacity(1);
         });
+
         map.on('draw:editstart', function (e) {
             var layer, id;
             if (fence.polyType === 'circle') {
@@ -341,12 +336,9 @@
         });
 
         map.on('draw:edited', function (e) {
-            var layer, id;
+            var layer, id, polyline, center;
             var layersGeoJSON = drawnItems.toGeoJSON();
             var line_points = [];
-            // var layer = e.layers._layers;
-            // var id = Object.keys(layer);
-            //layer[id].options.fillOpacity = 0.2;
 
             unitType.set('m');
             geometry = layersGeoJSON.features[0].geometry;
@@ -354,7 +346,6 @@
             if (fence.polyType === 'circle') {
                 layer = e.target._layers;
                 // Explicitly use Meters
-                console.log(layer[fence.id]);
                 fence.distance = layer[fence.id]._mRadius;
 
                 checkFenceState(fence);
@@ -370,10 +361,9 @@
 
                 line_points = layer.getLatLngs();
 
-                var polyline = L.polygon(line_points).addTo(drawnItems);
+                polyline = L.polygon(line_points).addTo(drawnItems);
 
-                // Get middle latLng on polyline
-                var center = layer.getBounds().getCenter();
+                center = layer.getBounds().getCenter();
 
                 checkFenceState(fence);
                 updateGeoCoords(center.lat, center.lng);
@@ -394,15 +384,14 @@
             checkFenceState(fence);
             drawClear(drawnItems);
 
-            console.log('draw:created');
-            // TODO - Refactor and get shit out of here.
             var type = e.layerType,
                 layersGeoJSON = null,
                 layer = e.layer,
                 feature = null,
-                line_points = [];
+                line_points = [],
+                center,
+                polyline;
 
-            // add Layer to Control Group
             drawnItems.addLayer(layer);
             fence.id = layer._leaflet_id;
             layersGeoJSON = drawnItems.toGeoJSON();
@@ -411,20 +400,16 @@
             fence.polyType = type;
 
             if (type === 'circle') {
-                // Explicitly use Meters
                 fence.distance = layer._mRadius;
-
-                // update view
                 updateGeoCoords(layer._latlng.lat, layer._latlng.lng);
                 unitType.set('m');
                 createPoly(geoCoords, fence.distance);
 
             } else if (type === 'polyline') {
                 line_points = layer.getLatLngs();
-                var polyline = L.polygon(line_points).addTo(drawnItems);
+                polyline = L.polygon(line_points).addTo(drawnItems);
 
-                // Get middle latLng on polyline
-                var center = layer.getBounds().getCenter();
+                center = layer.getBounds().getCenter();
 
                 updateGeoCoords(center.lat, center.lng);
 
@@ -475,8 +460,10 @@
         drawInit();
 
         map.on('load', function(e) {
+            var center, sidebar;
 
-            var center = map.getCenter();
+            center = map.getCenter();
+
             updateGeoCoords(center.lat, center.lng, map.getZoom());
             $('#you').data({
                 'lat': geoCoords.x,
@@ -487,7 +474,7 @@
             updateSidebarMarkerView(geoCoords);
             updateSettingsGeoInputs(geoCoords);
 
-            var sidebar = L.control.sidebar('sidebar').addTo(map);
+            sidebar = L.control.sidebar('sidebar').addTo(map);
 
         });
 
@@ -567,9 +554,10 @@
     function markerUpdate(geoCoords) {
         var str = '';
         str += 'Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y + ' <br /> Zoom: ' + geoCoords.z + ' <br /> Fence Type: ' + fence.polyType + ' <br /> Unit Type: ' + unitType.get() + ' <br />';
-        if (fence.bounds) {
-            str += 'Fence Bounds: ' + JSON.stringify(fence.bounds);
-        }
+
+        // if (fence.bounds) {
+        //     str += 'Fence Bounds: ' + JSON.stringify(fence.bounds);
+        // }
 
         marker.setPopupContent(str);
         geoMarkerCoordsUI(geoCoords);
@@ -604,12 +592,12 @@
 
     function renderMediawall(geometry) {
         var geomArr = [];
-      if (wall.state) {
-        try {
-            wall.destroy();
-            $('#map').after('<main id="app"></main>');
-        } catch (e) { }
-      }
+        if (wall.state) {
+            try {
+                wall.destroy();
+                $('#map').after('<main id="app"></main>');
+            } catch (e) { }
+        }
 
       if (!collectionDetails.network || !collectionDetails.articleId || !collectionDetails.siteId) {
         updateCollectionDeets(defaultData);
@@ -785,11 +773,10 @@
 
     function goGoGadgetMap() {
 
-        checkFenceState(fence);
-
         var lng = parseFloat($('#marker-lng').val());
         var lat = parseFloat($('#marker-lat').val());
 
+        checkFenceState(fence);
         $('.error').text('');
         $('.quick').removeClass('active');
 
