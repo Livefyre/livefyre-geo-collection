@@ -308,12 +308,17 @@
 
         map.on('draw:editstart', function (e) {
             console.log(e);
+            var layer = e.target._layers;
+            var id = fence.el._leaflet_id || null;
+            checkFenceState(fence, id);
         });
 
         map.on('draw:edited', function (e) {
             var layersGeoJSON = drawnItems.toGeoJSON();
             var layer = e.layers._layers;
             var id = Object.keys(layer);
+            console.log('here', layer, id);
+            //layer[id].options.fillOpacity = 0.2;
 
             unitType.set('m');
             geometry = layersGeoJSON.features[0].geometry;
@@ -322,6 +327,7 @@
             if (fence.polyType === 'circle') {
 
                 // Explicitly use Meters
+                console.log(layer[id]);
                 fence.distance = layer[id]._mRadius;
 
                 // update view
@@ -350,6 +356,7 @@
 
 
         map.on('draw:created', function (e) {
+
             console.log('draw:created');
             // TODO - Refactor and get shit out of here.
             var type = e.layerType,
@@ -464,7 +471,13 @@
         }
     };
 
-    function checkFenceState (fence) {
+    function checkFenceState (fence, id) {
+
+        if (id) {
+            console.log('fade', id);
+            //fence.el.addClass('fade');
+        }
+
         if (fence.state) {
             removeFence(fence);
         }
@@ -814,6 +827,10 @@
         goGoGadgetMap();
     });
 
+    var $cancelBtn = $('.leaflet-draw-section').eq(2).find('.leaflet-draw-actions li').eq(2).children('a');
+    $cancelBtn.on('click', function (e) {
+        console.log('cancel');
+    });
     $(document).ready(function () {
         if (local.checkStorage()) {
             if (local.getStorage('collectionDetails') && local.getStorage('collectionDetails') !== '') {

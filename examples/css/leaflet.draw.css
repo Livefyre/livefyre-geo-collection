@@ -161,6 +161,10 @@
 	background-position: -60px -1px;
 }
 
+.fade {
+	opacity: .1;
+}
+
 .tips {
     display: none;
 }
