@@ -168,7 +168,7 @@
         distance: null,
         prevUnitType: $('#units').val(),
         unitType: $('#units').val(),
-        polyType: 'No fence yet',
+        polyType: 'circle',
         bounds: null,
         id: null
     };
@@ -515,23 +515,27 @@
         fence.el = L.geoJson(geometry, {
           style: function(feature) {
               return {
-                  color: 'red'
-              };
+                color: 'red'
+            };
           },
           onEachFeature: function(feature, layer) {
               layer.bindPopup('The diameter of your fence is <br /> ' + (fence.distance * 2) +' ' + unitType.get() + '.');
           }
         });
-        // map.addLayer(fence.el);
-        fence.bounds = fence.el.getBounds();
-        markerUpdate(geoCoords, fence.bounds);
-        map.fitBounds(fence.bounds);
 
+        fitBounds();
+    }
+
+    function fitBounds() {
+        drawnItems.addLayer(fence.el);
+        fence.bounds = map.getBounds(drawnItems);
+        markerUpdate(geoCoords, fence.bounds);
+        map.fitBounds(drawnItems);
     }
 
     function removeFence(fence) {
       try {
-          map.removeLayer(fence.el);
+          drawnItems.removeLayer(fence.el);
       } catch (e) {}
     }
 
@@ -542,7 +546,6 @@
     }
 
     function updateSettingsGeoInputs(geoCoords) {
-        console.log(geoCoords);
         $('#marker-lng').val(geoCoords.y);
         $('#marker-lat').val(geoCoords.x);
     }
@@ -553,7 +556,6 @@
     }
 
     function markerUpdate(geoCoords) {
-        console.log(geoCoords);
         var str = '';
         str += 'Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y + ' <br /> Zoom: ' + geoCoords.z + ' <br /> Fence Type: ' + fence.polyType + ' <br /> Unit Type: ' + unitType.get() + ' <br />';
         if (fence.bounds) {
@@ -579,7 +581,8 @@
             fence.polyType = 'circle';
             updateGeoCoords(e.target._latlng.lat, e.target._latlng.lng);
             markerUpdate(geoCoords);
-            createPoly(geoCoords);
+            createPoly(geoCoords, null, addFence);
+
             markerMoved = true;
         });
     }
@@ -588,7 +591,6 @@
         geoCoords.x = lat;
         geoCoords.y = lng;
         geoCoords.z = z || map.getZoom();
-        console.log(geoCoords);
     }
 
     function renderMediawall(geometry) {
@@ -648,12 +650,8 @@
       wall.state = true;
     }
 
-    function createPoly(geoCoords, distance) {
+    function createPoly(geoCoords, distance, cb) {
         console.log('create called');
-
-        if (!fence.polyType) {
-            fence.polyType = 'circle';
-        }
 
         if (fence.polyType === 'circle') {
 
@@ -661,19 +659,14 @@
 
             var radiusInMeters, validInput, angleDegrees;
 
-            console.log('unit type before', fence.prevUnitType);
             fence.distance = distance || parseFloat($('#distance').val(), 10);
             fence.distance = (fence.distance >= parseFloat('.1', 10)) ? fence.distance : parseFloat('.125', 10);
 
             fence.unitType = unitType.get();
 
-            console.log('1', fence.distance, fence.unitType, validInput);
-
             radiusInMeters = convertUnits(fence.distance, fence.unitType, 'm');
 
             validInput = _validateDistance(radiusInMeters);
-
-            console.log('2', fence.distance, fence.unitType, radiusInMeters, fence.prevUnitType, validInput);
 
             if (!validInput) {
                 $('.error').text('Those numbers are out of range. Try again.');
@@ -681,17 +674,18 @@
                 angleDegrees = _angularRadiusFromSurfaceRadius(radiusInMeters);
                 geometry = _createPolyCircle(angleDegrees, geoCoords);
                 $('#distance').val(fence.distance);
-//                $('#perfect-circle').attr('checked', true);
-                $('#submit-radius').text('Update Fence');
             }
         } else if  (fence.polyType === 'polyline') {
             //console.dir('polyline', geometry);
         }
 
-        addFence(geometry);
         updateUnits();
         renderMediawall(geometry);
         _validateGeoJSON(geometry);
+
+        if (cb) {
+            cb(geometry);
+        }
 
         function _validateDistance(r) {
             var MAX = 3220290; // ~2000 miles
@@ -788,8 +782,12 @@
         if (!isNaN(lng) && !isNaN(lat)) {
             updateGeoCoords(lat, lng);
         }
-        createPoly(geoCoords);
+
+        unitType.set($('#units').val());
+
+        createPoly(geoCoords, $('#distance').val(), addFence);
     }
+
     // Click Handlers
     $('body').on('change', '#default-values', function (e) {
         e.preventDefault();
