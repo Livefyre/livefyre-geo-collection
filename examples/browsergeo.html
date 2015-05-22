@@ -167,7 +167,8 @@
         el: null,
         distance: null,
         unitType: 'mi',
-        polyType: ''
+        polyType: 'No fence yet',
+        bounds: null
     };
 
     var defaultData = $('#default-values').data();
@@ -446,6 +447,8 @@
         map.on('zoomend', function(e) {
             var z = map.getZoom();
             updateGeoCoords(geoCoords.x, geoCoords.x, z);
+            markerUpdate(geoCoords);
+
             $('#js-your-zoom > span').text(z);
         });
 
@@ -481,8 +484,10 @@
               layer.bindPopup('The diameter of your fence is <br /> ' + (fence.distance * 2) +' ' + unitType.get() + '.');
           }
       });
-      map.addLayer(fence.el);
-      map.fitBounds(fence.el.getBounds());
+        map.addLayer(fence.el);
+        fence.bounds = fence.el.getBounds();
+        markerUpdate(geoCoords, fence.bounds);
+        map.fitBounds(fence.bounds);
 
     }
 
@@ -510,7 +515,13 @@
     }
 
     function markerUpdate(geoCoords) {
-        marker.setPopupContent('Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y);
+        var str = '';
+        str += 'Latitude: ' + geoCoords.x + ' <br /> Longitude: ' + geoCoords.y + ' <br /> Zoom: ' + geoCoords.z + ' <br /> Fence Type: ' + fence.polyType + ' <br /> Unit Type: ' + unitType.get() + ' <br />';
+        if (fence.bounds) {
+            str += 'Fence Bounds: ' + JSON.stringify(fence.bounds);
+        }
+
+        marker.setPopupContent(str);
         geoMarkerCoordsUI(geoCoords);
         updateSettingsGeoInputs(geoCoords);
     }
@@ -631,8 +642,6 @@
         } else if  (fence.polyType === 'polyline') {
             //console.dir('polyline', geometry);
         }
-
-        console.dir(geometry);
 
         addFence(geometry);
         renderMediawall(geometry);
@@ -777,7 +786,8 @@
         var convertedVal = convertUnits($distEl.val(), fence.unitType, $currVal);
 
         $distEl.val(convertedVal);
-        fence.unitType = $el.val();
+        unitType.set($el.val());
+        markerUpdate(geoCoords);
     });
 
     $('body').on('click', '.quick', function(e) {

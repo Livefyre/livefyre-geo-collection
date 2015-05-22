@@ -386,4 +386,5 @@ ul {
 
 .leaflet-popup-content {
     text-align: left;
+    word-wrap: break-word;
 }
