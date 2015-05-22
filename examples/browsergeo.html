@@ -290,7 +290,8 @@
             },
             edit: {
                 featureGroup: drawnItems, //REQUIRED!!
-                remove: false
+                remove: false,
+                edit: false
             }
         };
 
@@ -307,6 +308,8 @@
                 'weight' : '0',
                 'opacity': '0'
             });
+            marker.closePopup();
+            marker.setOpacity(0);
         });
 
         map.on('draw:drawstop', function (e) {
@@ -316,6 +319,7 @@
                 'weight' :'5',
                 'opacity': '0.5'
             });
+            marker.setOpacity(1);
         });
         map.on('draw:editstart', function (e) {
             var layer, id;
@@ -503,11 +507,6 @@
 
     function checkFenceState (fence, id) {
 
-        if (id) {
-            console.log('fade', id);
-            //fence.el.addClass('fade');
-        }
-
         if (fence.state) {
             removeFence(fence);
         }
@@ -540,7 +539,7 @@
 
     function removeFence(fence) {
       try {
-          drawnItems.removeLayer(fence.el);
+          drawnItems.clearLayers();
       } catch (e) {}
     }
 
@@ -656,11 +655,8 @@
     }
 
     function createPoly(geoCoords, distance, cb) {
-        console.log('create called');
 
         if (fence.polyType === 'circle') {
-
-            checkFenceState(fence);
 
             var radiusInMeters, validInput, angleDegrees;
 
@@ -783,6 +779,8 @@
     }
 
     function goGoGadgetMap() {
+
+        checkFenceState(fence);
 
         var lng = parseFloat($('#marker-lng').val());
         var lat = parseFloat($('#marker-lat').val());
