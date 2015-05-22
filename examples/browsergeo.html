@@ -322,10 +322,13 @@
             if (fence.polyType === 'circle') {
                 layer = e.target._layers[fence.id];
             } else if (fence.polyType === 'polyline') {
-                 //id = Object.keys(fence.el._layers);
                  layer = e.target._layers[fence.id];
             }
-            console.log('layer: ', layer);
+            marker.dragging.disable()
+        });
+
+        map.on('draw:editstop', function (e) {
+            marker.dragging.enable();
         });
 
         map.on('draw:edited', function (e) {
@@ -674,20 +677,21 @@
                 $('.error').text('Those numbers are out of range. Try again.');
             } else {
                 angleDegrees = _angularRadiusFromSurfaceRadius(radiusInMeters);
-                geometry = _createPolyCircle(angleDegrees, geoCoords);
+                geometry = _createPolyCircleD3(angleDegrees, geoCoords);
+                //geometry = _createPolyCircleLeaf(radiusInMeters, geoCoords);
                 $('#distance').val(fence.distance);
             }
         } else if  (fence.polyType === 'polyline') {
             //console.dir('polyline', geometry);
         }
 
-        updateUnits();
-        renderMediawall(geometry);
-        _validateGeoJSON(geometry);
-
         if (cb) {
             cb(geometry);
         }
+
+        updateUnits();
+        renderMediawall(geometry);
+        _validateGeoJSON(geometry);
 
         function _validateDistance(r) {
             var MAX = 3220290; // ~2000 miles
@@ -701,7 +705,12 @@
             return angle;
         }
 
-        function _createPolyCircle(angle, geoCoords) {
+        function _createPolyCircleLeaf(radiusInMeters, geoCoords) {
+            var latlng = L.latLng(geoCoords.x, geoCoords.y);
+            return L.circle(latlng, radiusInMeters).toGeoJSON();
+        }
+
+        function _createPolyCircleD3(angle, geoCoords) {
             return d3.geo.circle()
               .origin([geoCoords.y, geoCoords.x])
               .angle(angle).precision(1)();
